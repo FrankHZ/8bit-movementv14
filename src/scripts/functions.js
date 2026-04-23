@@ -1,5 +1,12 @@
 //change image titles for tooltips from Foundry API looks nicer.
 const MODULE_NAME = "8bit-movement";
+const __8bitPersistTimers = new Map();
+
+function getElementRoot(application, fallbackElement) {
+  const element = fallbackElement ?? application?.element;
+  if (!element) return null;
+  return element instanceof HTMLElement ? $(element) : $(element);
+}
 
 
 // --- 8bit-movement: smooth move + no-fade helpers ---
@@ -140,26 +147,15 @@ const diagonalMode = game.settings.get(MODULE_NAME, "diagonalMode");
                     if (!game.settings.get(MODULE_NAME, "warnings")) ui.notifications.warn(game.i18n.localize("8BITMOVEMENT.Warn.No_Images_Diagonal"));
                     return;
                 }
-                if (foundry.utils.isNewerVersion(game.version, "12")) {
-                    if(token.x === change.x && token.y === change.y) return;
-                    if(token.x > change.x && token.y === change.y) direction = "left";
-                    if(token.x < change.x && token.y === change.y) direction = "right";
-                    if(token.y > change.y && token.x === change.x) direction = "up";
-                    if(token.y < change.y && token.x === change.x) direction = "down";
-                    if(token.x > change.x && token.y > change.y) direction = "up-left";
-                    if(token.x < change.x && token.y > change.y) direction = "up-right";
-                    if(token.x > change.x && token.y < change.y) direction = "down-left";
-                    if(token.x < change.x && token.y < change.y) direction = "down-right";
-                } else {
-                    if(token.x > change.x && !change.y) direction = "left";
-                    if(token.x < change.x && !change.y) direction = "right";
-                    if(token.y > change.y && !change.x) direction = "up";
-                    if(token.y < change.y && !change.x) direction = "down";
-                    if(token.x > change.x && token.y > change.y) direction = "up-left";
-                    if(token.x < change.x && token.y > change.y) direction = "up-right";
-                    if(token.x > change.x && token.y < change.y) direction = "down-left";
-                    if(token.x < change.x && token.y < change.y) direction = "down-right";
-                }
+                if(token.x === change.x && token.y === change.y) return;
+                if(token.x > change.x && token.y === change.y) direction = "left";
+                if(token.x < change.x && token.y === change.y) direction = "right";
+                if(token.y > change.y && token.x === change.x) direction = "up";
+                if(token.y < change.y && token.x === change.x) direction = "down";
+                if(token.x > change.x && token.y > change.y) direction = "up-left";
+                if(token.x < change.x && token.y > change.y) direction = "up-right";
+                if(token.x > change.x && token.y < change.y) direction = "down-left";
+                if(token.x < change.x && token.y < change.y) direction = "down-right";
             } else {
                 if(token.x > change.x) direction = "left";
                 if(token.x < change.x) direction = "right";
@@ -226,22 +222,26 @@ const diagonalMode = game.settings.get(MODULE_NAME, "diagonalMode");
  * This function adds buttons to the Token HUD. Allowing for modifications to be done.
  * @param {object} sheet | recieves the sheet from the renderTokenHud hook.
  */
-export async function createHudButtons(sheet) {
+export async function createHudButtons(sheet, element) {
     if(!game.settings.get(MODULE_NAME, "tokenMode")) return;
     if(game.settings.get(MODULE_NAME, "gmMode") && !game.user.isGM) return;
+    const root = getElementRoot(sheet, element);
     const token = sheet.object;
-    $("#token-hud .col.middle").append(`<div class="image-box"></div>`);
+    if (!root || !token) return;
+    const middleColumn = root.find(".col.middle");
+    if (!middleColumn.length || middleColumn.find(".image-box").length) return;
+    middleColumn.append(`<div class="image-box"></div>`);
     if(!token.document.flags.hasOwnProperty(MODULE_NAME)) {
-        $("#token-hud .col.middle .image-box").append(`<div class="movement-icon option middle" id="set-images"><i class="far fa-plus-square" title="${game.i18n.format("8BITMOVEMENT.activate")}"></i></div>`);
-        $("#set-images").click(async function() { 
+        root.find(".image-box").append(`<div class="movement-icon option middle" id="set-images"><i class="far fa-plus-square" title="${game.i18n.format("8BITMOVEMENT.activate")}"></i></div>`);
+        root.find("#set-images").click(async function() { 
             await initializeMovement(token.id); 
             sheet.render();
         });
     } else {
         if(token.document.getFlag(MODULE_NAME, "locked")) {
-            $("#token-hud .col.middle .image-box").append(`<div class="movement-icon option middle" id="unlock-images" ><i class="fas fa-lock" title="${game.i18n.format("8BITMOVEMENT.unlock")}"></i></div></div>`);
-            $("#unlock-images").click(async function(){
-                $(".image-box").empty();
+            root.find(".image-box").append(`<div class="movement-icon option middle" id="unlock-images" ><i class="fas fa-lock" title="${game.i18n.format("8BITMOVEMENT.unlock")}"></i></div></div>`);
+            root.find("#unlock-images").click(async function(){
+                root.find(".image-box").empty();
                 await token.document.setFlag(MODULE_NAME, "locked", false);
                 sheet.render();
             });
@@ -256,65 +256,65 @@ export async function createHudButtons(sheet) {
         const downLeftImage = token.document.getFlag(MODULE_NAME, "DL") || token.actor.img;
         const downRightImage = token.document.getFlag(MODULE_NAME, "DR") || token.actor.img;
 
-        $("#token-hud .col.middle .image-box").append(`<div class="movement-icon option" id="lock-images" ><i class="fas fa-lock-open" title="${game.i18n.format("8BITMOVEMENT.lock")}"></i></div>`);
-        $("#lock-images").click(async function(){
+        root.find(".image-box").append(`<div class="movement-icon option" id="lock-images" ><i class="fas fa-lock-open" title="${game.i18n.format("8BITMOVEMENT.lock")}"></i></div>`);
+        root.find("#lock-images").click(async function(){
             await token.document.setFlag(MODULE_NAME, "locked", true);
-            $(".image-box").empty();
-            $("#token-hud .col.middle .image-box").append(`<div class="movement-icon option middle" id="unlock-images" ><i class="fas fa-lock" title="${game.i18n.format("8BITMOVEMENT.unlock")}"></i></div>`);
-            $("#unlock-images").click(async function(){
-                $(".image-box").empty();
+            root.find(".image-box").empty();
+            root.find(".image-box").append(`<div class="movement-icon option middle" id="unlock-images" ><i class="fas fa-lock" title="${game.i18n.format("8BITMOVEMENT.unlock")}"></i></div>`);
+            root.find("#unlock-images").click(async function(){
+                root.find(".image-box").empty();
                 await token.document.setFlag(MODULE_NAME, "locked", false);
                 sheet.render();
             });
         });    
-        $("#token-hud .col.middle .image-box").append(`<div class="movement-icon" id="up-image" ><i class="fas fa-angle-up"></i><img src="${upImage}" title="${game.i18n.format("8BITMOVEMENT.up")}"></div>`);
-        $("#up-image").click(async function(){
+        root.find(".image-box").append(`<div class="movement-icon" id="up-image" ><i class="fas fa-angle-up"></i><img src="${upImage}" title="${game.i18n.format("8BITMOVEMENT.up")}"></div>`);
+        root.find("#up-image").click(async function(){
             await imageLoader(token.id, sheet, "up");
         });
-        $("#token-hud .col.middle .image-box").append(`<div class="movement-icon" id="down-image" ><i class="fas fa-angle-down"></i><img src="${downImage}" title="${game.i18n.format("8BITMOVEMENT.down")}"></div>`);
-        $("#down-image").click(async function(){
+        root.find(".image-box").append(`<div class="movement-icon" id="down-image" ><i class="fas fa-angle-down"></i><img src="${downImage}" title="${game.i18n.format("8BITMOVEMENT.down")}"></div>`);
+        root.find("#down-image").click(async function(){
             await imageLoader(token.id, sheet, "down");
         });
-        $("#token-hud .col.middle .image-box").append(`<div class="movement-icon" id="left-image" ><i class="fas fa-angle-left" ></i><img src="${leftImage}" title="${game.i18n.format("8BITMOVEMENT.left")}"></div>`);
-        $("#left-image").click(async function(){
+        root.find(".image-box").append(`<div class="movement-icon" id="left-image" ><i class="fas fa-angle-left" ></i><img src="${leftImage}" title="${game.i18n.format("8BITMOVEMENT.left")}"></div>`);
+        root.find("#left-image").click(async function(){
             await imageLoader(token.id, sheet, "left");
         });
-        $("#token-hud .col.middle .image-box").append(`<div class="movement-icon" id="right-image" ><i class="fas fa-angle-right"></i><img src="${rightImage}" title="${game.i18n.format("8BITMOVEMENT.right")}"></div>`);
-        $("#right-image").click(async function(){
+        root.find(".image-box").append(`<div class="movement-icon" id="right-image" ><i class="fas fa-angle-right"></i><img src="${rightImage}" title="${game.i18n.format("8BITMOVEMENT.right")}"></div>`);
+        root.find("#right-image").click(async function(){
             await imageLoader(token.id, sheet, "right");
         });
         if(game.settings.get(MODULE_NAME, "diagonalMode")){
-            $("#token-hud .col.middle .image-box").append(`<div class="movement-icon" id="up-left-image" ><div>UL</div><img src="${upLeftImage}" title="${game.i18n.format("8BITMOVEMENT.up-left")}"></div>`);
-            $("#up-left-image").click(async function(){
+            root.find(".image-box").append(`<div class="movement-icon" id="up-left-image" ><div>UL</div><img src="${upLeftImage}" title="${game.i18n.format("8BITMOVEMENT.up-left")}"></div>`);
+            root.find("#up-left-image").click(async function(){
                 await imageLoader(token.id, sheet, "UL");
             });
-            $("#token-hud .col.middle .image-box").append(`<div class="movement-icon" id="up-right-image" ><div>UR</div><img src="${upRightImage}" title="${game.i18n.format("8BITMOVEMENT.up-right")}"></div>`);
-            $("#up-right-image").click(async function(){
+            root.find(".image-box").append(`<div class="movement-icon" id="up-right-image" ><div>UR</div><img src="${upRightImage}" title="${game.i18n.format("8BITMOVEMENT.up-right")}"></div>`);
+            root.find("#up-right-image").click(async function(){
                 await imageLoader(token.id, sheet, "UR");
             });
-            $("#token-hud .col.middle .image-box").append(`<div class="movement-icon" id="down-left-image" ><div>DL</div><img src="${downLeftImage}" title="${game.i18n.format("8BITMOVEMENT.down-left")}"></div>`);
-            $("#down-left-image").click(async function(){
+            root.find(".image-box").append(`<div class="movement-icon" id="down-left-image" ><div>DL</div><img src="${downLeftImage}" title="${game.i18n.format("8BITMOVEMENT.down-left")}"></div>`);
+            root.find("#down-left-image").click(async function(){
                 await imageLoader(token.id, sheet, "DL");
             });
-            $("#token-hud .col.middle .image-box").append(`<div class="movement-icon" id="down-right-image" ><div>DR</div><img src="${downRightImage}" title="${game.i18n.format("8BITMOVEMENT.down-right")}"></div>`);
-            $("#down-right-image").click(async function(){
+            root.find(".image-box").append(`<div class="movement-icon" id="down-right-image" ><div>DR</div><img src="${downRightImage}" title="${game.i18n.format("8BITMOVEMENT.down-right")}"></div>`);
+            root.find("#down-right-image").click(async function(){
                 await imageLoader(token.id, sheet, "DR");
             });
         }
 
 
         if(token.document.getFlag(MODULE_NAME, "set")){
-            $("#token-hud .col.middle .image-box").append(`<div class="movement-icon option" id="remove-from-prototype" ><i class="fas fa-times" title="${game.i18n.format("8BITMOVEMENT.delete")}"></i></div>`);
-            $("#remove-from-prototype").click(async function(){
-                await game.actors.get(token.actor.id).update({"prototypeToken.flags.-=8bit-movement": null, "prototypeToken.img": downImage, "prototypeToken.lockRotation": false});
-                await token.document.update({"flags.-=8bit-movement": null, lockRotation: false, rotation: 0});
+            root.find(".image-box").append(`<div class="movement-icon option" id="remove-from-prototype" ><i class="fas fa-times" title="${game.i18n.format("8BITMOVEMENT.delete")}"></i></div>`);
+            root.find("#remove-from-prototype").click(async function(){
+                await game.actors.get(token.actor.id).update({"prototypeToken.flags.-=8bit-movement": null, "prototypeToken.texture.src": downImage, "prototypeToken.lockRotation": false});
+                await token.document.update({"flags.-=8bit-movement": null, "texture.src": downImage, lockRotation: false, rotation: 0});
                 sheet.render();
             });
         }
         else {
-            $("#token-hud .col.middle .image-box").append(`<div class="movement-icon option" id="save-to-prototype" ><i class="fas fa-address-card" title="${game.i18n.format("8BITMOVEMENT.save")}"></i></div>`);
-            $("#save-to-prototype").click(async function(){
-                await game.actors.get(token.actor.id).update({"prototypeToken.flags.8bit-movement": {up: upImage, down: downImage, left: leftImage, right: rightImage, set: true}, "prototypeToken.img": downImage, "prototypeToken.lockRotation": true});
+            root.find(".image-box").append(`<div class="movement-icon option" id="save-to-prototype" ><i class="fas fa-address-card" title="${game.i18n.format("8BITMOVEMENT.save")}"></i></div>`);
+            root.find("#save-to-prototype").click(async function(){
+                await game.actors.get(token.actor.id).update({"prototypeToken.flags.8bit-movement": {up: upImage, down: downImage, left: leftImage, right: rightImage, set: true}, "prototypeToken.texture.src": downImage, "prototypeToken.lockRotation": true});
                 await token.document.setFlag(MODULE_NAME, "set", true);
                 sheet.render();
             });
@@ -325,15 +325,16 @@ export async function createHudButtons(sheet) {
  * Makes the buttons on the Token Config window.
  * @param {object} sheet | recieves the sheet from the renderTokenConfig hook. 
  */
-export async function createConfigButtons(sheet) {
+export async function createConfigButtons(sheet, element) {
     if(!game.settings.get(MODULE_NAME, "settingsMode")) return;
     if(game.settings.get(MODULE_NAME, "gmMode") && !game.user.isGM) return;
     const tab = "appearance";
+    const root = getElementRoot(sheet, element);
     const token = sheet.object; // for some reason when getting it from the Config Sheet you get the TokenDocument!
-    if(token.documentName !== "Token") return; // for now prevents it from running on the prototype token hud.
+    if(!root || token.documentName !== "Token") return; // for now prevents it from running on the prototype token hud.
     if(!token.flags.hasOwnProperty(MODULE_NAME)) {
-        $(sheet.element).find(`.window-content .tab[data-tab="${tab}"]`).append(`<div class="form-group movement-form-group"><label class="movement-label">${game.i18n.format("8BITMOVEMENT.activate_label")}</label><div class="form-fields"><a class="movement-settings activate"><i class="far fa-plus-square" title="${game.i18n.format("8BITMOVEMENT.activate")}"></i></a></div></div>`);
-        $(sheet.element).find(`.movement-settings.activate`).click(async function(){ 
+        root.find(`.window-content .tab[data-tab="${tab}"]`).append(`<div class="form-group movement-form-group"><label class="movement-label">${game.i18n.format("8BITMOVEMENT.activate_label")}</label><div class="form-fields"><a class="movement-settings activate"><i class="far fa-plus-square" title="${game.i18n.format("8BITMOVEMENT.activate")}"></i></a></div></div>`);
+        root.find(`.movement-settings.activate`).click(async function(){ 
             await initializeMovement(token.id);
             sheet.render(); 
         });
@@ -344,55 +345,55 @@ export async function createConfigButtons(sheet) {
         const leftImage = token.getFlag(MODULE_NAME, "left");
         const rightImage = token.getFlag(MODULE_NAME, "right");
         if(token.getFlag(MODULE_NAME, "locked")) {
-            $(sheet.element).find(`.window-content .tab[data-tab="${tab}"]`).append(`<div class="form-group movement-form-group"><label class="movement-label">${game.i18n.format("8BITMOVEMENT.unlock")}: </label><div class="form-fields"><a class="movement-settings unlock"><i class="fas fa-lock" title="${game.i18n.format("8BITMOVEMENT.unlock")}"></i></a></div></div>`);
-            $(sheet.element).find(`.movement-settings.unlock`).click(async function(){
+            root.find(`.window-content .tab[data-tab="${tab}"]`).append(`<div class="form-group movement-form-group"><label class="movement-label">${game.i18n.format("8BITMOVEMENT.unlock")}: </label><div class="form-fields"><a class="movement-settings unlock"><i class="fas fa-lock" title="${game.i18n.format("8BITMOVEMENT.unlock")}"></i></a></div></div>`);
+            root.find(`.movement-settings.unlock`).click(async function(){
                 await token.setFlag(MODULE_NAME, "locked", false);
                 sheet.render();
             });
         }
         else {
-            $(sheet.element).find(`.window-content .tab[data-tab="${tab}"]`).append(`<div class="form-group movement-form-group"><label class="movement-label">${game.i18n.format("8BITMOVEMENT.settings")}</label><div class="form-fields"></div></div>`);
-            $(sheet.element).find(`.form-group.movement-form-group .form-fields`).append(`<a class="movement-settings lock"><i class="fas fa-lock-open" title="${game.i18n.format("8BITMOVEMENT.lock")}"></i></a>
+            root.find(`.window-content .tab[data-tab="${tab}"]`).append(`<div class="form-group movement-form-group"><label class="movement-label">${game.i18n.format("8BITMOVEMENT.settings")}</label><div class="form-fields"></div></div>`);
+            root.find(`.form-group.movement-form-group .form-fields`).append(`<a class="movement-settings lock"><i class="fas fa-lock-open" title="${game.i18n.format("8BITMOVEMENT.lock")}"></i></a>
                                                                                         <a class="movement-settings up-image"><img src="${upImage}" title="${game.i18n.format("8BITMOVEMENT.up")}"></a>
                                                                                         <a class="movement-settings down-image"><img src="${downImage}" title="${game.i18n.format("8BITMOVEMENT.down")}"></a>
                                                                                         <a class="movement-settings left-image"><img src="${leftImage}" title="${game.i18n.format("8BITMOVEMENT.left")}"></a>
                                                                                         <a class="movement-settings right-image"><img src="${rightImage}" title="${game.i18n.format("8BITMOVEMENT.right")}"></a>
                                                                                         `);
-            $(sheet.element).find(`.movement-settings.up-image`).click(async function(){
+            root.find(`.movement-settings.up-image`).click(async function(){
                 await imageLoader(token.id, sheet, "up");
             });
-            $(sheet.element).find(`.movement-settings.down-image`).click(async function(){
+            root.find(`.movement-settings.down-image`).click(async function(){
                 await imageLoader(token.id, sheet, "down");
             });
-            $(sheet.element).find(`.movement-settings.left-image`).click(async function(){
+            root.find(`.movement-settings.left-image`).click(async function(){
                 await imageLoader(token.id, sheet, "left");
             });
-            $(sheet.element).find(`.movement-settings.right-image`).click(async function(){
+            root.find(`.movement-settings.right-image`).click(async function(){
                 await imageLoader(token.id, sheet, "right");
             });
-            $(sheet.element).find(`.movement-settings.lock`).click(async function(){
+            root.find(`.movement-settings.lock`).click(async function(){
                 await token.setFlag(MODULE_NAME, "locked", true);
                 sheet.render();
             });
             if(token.getFlag(MODULE_NAME, "set")){
-                $(sheet.element).find(`.form-group.movement-form-group .form-fields`).append(`<a class="movement-settings remove"><i class="fas fa-times" title="${game.i18n.format("8BITMOVEMENT.delete")}"></i></a>`);
-                $(sheet.element).find(`.movement-settings.remove`).click(async function(){
-                    await game.actors.get(token.actor.id).update({"prototypeToken.flags.-=8bit-movement": null, "prototypeToken.img": downImage, "prototypeToken.lockRotation": false});
-                    await token.update({"flags.-=8bit-movement": null, lockRotation: false, rotation: 0});
+                root.find(`.form-group.movement-form-group .form-fields`).append(`<a class="movement-settings remove"><i class="fas fa-times" title="${game.i18n.format("8BITMOVEMENT.delete")}"></i></a>`);
+                root.find(`.movement-settings.remove`).click(async function(){
+                    await game.actors.get(token.actor.id).update({"prototypeToken.flags.-=8bit-movement": null, "prototypeToken.texture.src": downImage, "prototypeToken.lockRotation": false});
+                    await token.update({"flags.-=8bit-movement": null, "texture.src": downImage, lockRotation: false, rotation: 0});
                     sheet.render();
                 });
             }
             else {
-                $(sheet.element).find(`.form-group.movement-form-group .form-fields`).append(`<a class="movement-settings save" ><i class="fas fa-address-card" title="${game.i18n.format("8BITMOVEMENT.save")}"></i></a>`);
-                $(sheet.element).find(`.movement-settings.save`).click(async function(){
-                    await game.actors.get(token.actor.id).update({"prototypeToken.flags.8bit-movement": {up: upImage, down: downImage, left: leftImage, right: rightImage, set: true}, "prototypeToken.img": downImage, "prototypeToken.lockRotation": true});
+                root.find(`.form-group.movement-form-group .form-fields`).append(`<a class="movement-settings save" ><i class="fas fa-address-card" title="${game.i18n.format("8BITMOVEMENT.save")}"></i></a>`);
+                root.find(`.movement-settings.save`).click(async function(){
+                    await game.actors.get(token.actor.id).update({"prototypeToken.flags.8bit-movement": {up: upImage, down: downImage, left: leftImage, right: rightImage, set: true}, "prototypeToken.texture.src": downImage, "prototypeToken.lockRotation": true});
                     await token.setFlag(MODULE_NAME, "set", true);
                     sheet.render();
                 });
             }
         }
     }
-    sheet.element.height("auto");
+    if (typeof sheet.setPosition === "function") sheet.setPosition();
 }
 
 // Ensure no lingering fade/opacity after animated movement completes
