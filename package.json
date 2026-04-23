@@ -1,6 +1,6 @@
 {
   "name": "8bit-movement",
-  "version": "1.2.2",
+  "version": "1.4.0",
   "description": "Setup your token to be semi animated like 8bit games of old. This module allows you to set a different image for each direction (WSAD, arrow keys).",
   "main": "main.js",
   "type": "module",
@@ -8,6 +8,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "muhahahahe",
-  "license": "MIT"
+  "author": "FrankHZ",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FrankHZ/8bit-movementv14.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FrankHZ/8bit-movementv14/issues"
+  },
+  "homepage": "https://github.com/FrankHZ/8bit-movementv14#readme"
 }

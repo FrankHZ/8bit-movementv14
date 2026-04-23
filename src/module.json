@@ -5,8 +5,17 @@
   "description": "Setup your tokens to have four or eight directions when moving them with WASD or arrow keys.<br>Easy to setup using the Token HUD or Token config screen. <br>Configure settings to choose your preferred method or whether players or only the GM can make alterations.",
   "authors": [
     {
+      "name": "Freeze"
+    },
+    {
       "name": "muhahahahe",
       "discord": "muhahahahe"
+    },
+    {
+      "name": "darth-beedz"
+    },
+    {
+      "name": "FrankHZ"
     }
   ],
   "version": "1.4.0",
@@ -24,9 +33,9 @@
       "path": "lang/en.json"
     }
   ],
-  "manifest": "https://raw.githubusercontent.com/darth-beedz/8bit-movementv13/main/src/module.json",
-  "url": "https://github.com/darth-beedz/8bit-movementv13",
-  "download": "https://github.com/darth-beedz/8bit-movementv13/archive/refs/tags/1.0.zip",
+  "manifest": "https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/main/src/module.json",
+  "url": "https://github.com/FrankHZ/8bit-movementv14",
+  "download": "https://github.com/FrankHZ/8bit-movementv14/archive/refs/heads/main.zip",
   "protected": false,
   "coreTranslation": false,
   "library": false,

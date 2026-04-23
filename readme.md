@@ -1,14 +1,55 @@
-Stable with limited testing on v13.
+# 8bit Movement v14
 
-STILL REQUIRES LIBWRAPPER
+`8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
--Setup your token to be semi animated like 8bit games of old. This module allows you to set a different image for each direction (WSAD, arrow keys).
+This fork is focused on Foundry Virtual Tabletop v14 compatibility.
 
--Use the convenient TokenHud setup or the Token configuration screen to pick the images.
+## Features
 
--Lock the setup and forget about it. And enjoy as your tokens now face the direction you want them to go.
+- Set directional token images from the Token HUD
+- Configure the same images from Token Config
+- Auto-detect direction suffixes in filenames during setup
+- Optional diagonal support using `UL`, `UR`, `DL`, and `DR`
+- Save directional settings back to the actor's prototype token
+- Optional warning controls and rotation animation handling
 
--See CHANGELOG for the latest changes.
+## Expected image naming
 
+If your token images share a naming pattern, the setup action can fill the flags automatically.
 
-**The original author discontinued development for this module! Original repo: https://gitlab.com/Freeze020/8bit-movement**
+Examples:
+
+- `hero_UP.webp`
+- `hero_DOWN.webp`
+- `hero_LEFT.webp`
+- `hero_RIGHT.webp`
+- `hero_UL.webp`
+- `hero_UR.webp`
+- `hero_DL.webp`
+- `hero_DR.webp`
+
+Lowercase suffixes also work.
+
+## Current status
+
+- Targeted at Foundry VTT `14.360`
+- Updated from earlier v10-v13 forks
+- Still needs real-world testing in Foundry v14 before calling it fully stable
+
+## Credits
+
+This module exists because of work across several forks and maintenance passes.
+
+- Original module by `Freeze` / `Freeze020`
+  Original repo: https://gitlab.com/Freeze020/8bit-movement
+- Later maintenance by `muhahahahe`
+- v13 fork and maintenance by `darth-beedz`
+- Current v14 fork and maintenance: `FrankHZ`
+  Some local git history may appear under `FFang`, which is the same maintainer identity
+
+If you are one of the previous maintainers and want the wording adjusted, I’m happy to refine the credit section.
+
+## Notes
+
+- `libWrapper` is still required for the optional rotation animation override behavior
+- See `CHANGELOG` for earlier historical changes through the prior forks
