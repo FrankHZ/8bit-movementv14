@@ -2,7 +2,7 @@
 
 `8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
-This fork is focused on Foundry Virtual Tabletop v14 compatibility.
+This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility.
 
 ## Features
 
@@ -32,9 +32,9 @@ Lowercase suffixes also work.
 
 ## Current status
 
-- Targeted at Foundry VTT `14.360`
+- Targeted at Foundry VTT `13` through `14.360`
 - Updated from earlier v10-v13 forks
-- Still needs real-world testing in Foundry v14 before calling it fully stable
+- Still needs more real-world testing across both Foundry v13 and v14 before calling it fully stable
 
 ## Credits
 
@@ -51,5 +51,5 @@ If you are one of the previous maintainers and want the wording adjusted, I’m 
 
 ## Notes
 
-- `libWrapper` is still required for the optional rotation animation override behavior
+- `libWrapper` is optional and only used for the rotation animation override setting
 - See `CHANGELOG` for earlier historical changes through the prior forks

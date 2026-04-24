@@ -5,22 +5,12 @@
   "description": "Setup your tokens to have four or eight directions when moving them with WASD or arrow keys.<br>Easy to setup using the Token HUD or Token config screen. <br>Configure settings to choose your preferred method or whether players or only the GM can make alterations.",
   "authors": [
     {
-      "name": "Freeze"
-    },
-    {
-      "name": "muhahahahe",
-      "discord": "muhahahahe"
-    },
-    {
-      "name": "darth-beedz"
-    },
-    {
       "name": "FrankHZ"
     }
   ],
   "version": "1.4.0",
   "compatibility": {
-    "minimum": "14",
+    "minimum": "13",
     "verified": "14.360"
   },
   "scripts": [],
@@ -39,5 +29,12 @@
   "protected": false,
   "coreTranslation": false,
   "library": false,
-  "relationships": {}
+  "relationships": {
+    "recommends": [
+      {
+        "id": "lib-wrapper",
+        "type": "module"
+      }
+    ]
+  }
 }

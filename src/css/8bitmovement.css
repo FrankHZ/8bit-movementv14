@@ -16,10 +16,12 @@
     margin-top: 8px;
 }
 #token-hud .movement-icon {
+    appearance: none;
     box-sizing: content-box;
     width: 40px;
     flex: 0 0 40px;
     margin: 8px 0px 16px 0px;
+    padding: 0;
     font-size: 15px;
     text-align: center;
     color: #CCC;
@@ -28,6 +30,7 @@
     border: 1px solid #333;
     border-radius: 8px;
     pointer-events: all;
+    font: inherit;
 }
 #token-hud .movement-icon:hover {
     color: #EEE;
