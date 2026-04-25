@@ -1,13 +1,12 @@
 import { registerSettings } from "./settings.js";
-import {
-  createConfigButtons,
-  createHudButtons,
-  addListener,
-} from "./functions.js";
+import { addListener } from "./functions.js";
+import { createConfigButtons, createHudButtons } from "./ui.js";
 
 Hooks.on("init", () => {
   registerSettings();
+});
 
+Hooks.on("ready", async function () {
   if (
     game.settings.get("8bit-movement", "disableRotationAnimation") &&
     globalThis.libWrapper
@@ -30,9 +29,7 @@ Hooks.on("init", () => {
       "WRAPPER",
     );
   }
-});
 
-Hooks.on("ready", async function () {
   addListener();
 });
 
