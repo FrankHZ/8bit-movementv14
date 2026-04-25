@@ -1,7 +1,7 @@
 {
   "name": "8bit-movement",
-  "id": "8bit-movement",
-  "title": "Token movement 8bit style",
+  "id": "8bit-movement-frankhz",
+  "title": "Token movement 8bit style v14",
   "description": "Setup your tokens to have four or eight directions when moving them with WASD or arrow keys.<br>Easy to setup using the Token HUD or Token config screen. <br>Configure settings to choose your preferred method or whether players or only the GM can make alterations.",
   "authors": [
     {

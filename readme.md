@@ -61,6 +61,33 @@ This module does not currently have an automated test suite. Useful checks befor
 
 Runtime behavior still needs to be checked in Foundry itself, especially Token HUD rendering, Token Config rendering, movement texture swaps, diagonal movement, and the optional `libWrapper` rotation wrapper.
 
+## Release helper
+
+This repo includes a small helper for Foundry's Package Release API.
+
+1. Copy `.env.example` to `.env.local` or set `FOUNDRY_RELEASE_TOKEN` in your shell.
+2. Get the token from the package edit page on foundryvtt.com.
+3. Keep `.env` and `.env.local` private; they are ignored by git.
+4. Confirm the generated API payload:
+
+   ```bash
+   npm run release:payload
+   ```
+
+5. Validate the release with Foundry without saving it:
+
+   ```bash
+   npm run release:dry-run
+   ```
+
+6. Publish the release:
+
+   ```bash
+   npm run release:publish
+   ```
+
+Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.4.0`. The API payload uses that tag for the version-specific manifest URL.
+
 ## Credits
 
 This module exists because of work across several forks and maintenance passes.
