@@ -1,5 +1,43 @@
 import { MODULE_NAME, imageLoader, initializeMovement } from "./functions.js";
 
+const CARDINAL_DIRECTIONS = [
+  { key: "up", action: "up-image", labelKey: "8BITMOVEMENT.up" },
+  { key: "down", action: "down-image", labelKey: "8BITMOVEMENT.down" },
+  { key: "left", action: "left-image", labelKey: "8BITMOVEMENT.left" },
+  { key: "right", action: "right-image", labelKey: "8BITMOVEMENT.right" },
+];
+
+const DIAGONAL_DIRECTIONS = [
+  {
+    key: "UL",
+    action: "up-left-image",
+    labelKey: "8BITMOVEMENT.up-left",
+    hudLabel: "UL",
+  },
+  {
+    key: "UR",
+    action: "up-right-image",
+    labelKey: "8BITMOVEMENT.up-right",
+    hudLabel: "UR",
+  },
+  {
+    key: "DL",
+    action: "down-left-image",
+    labelKey: "8BITMOVEMENT.down-left",
+    hudLabel: "DL",
+  },
+  {
+    key: "DR",
+    action: "down-right-image",
+    labelKey: "8BITMOVEMENT.down-right",
+    hudLabel: "DR",
+  },
+];
+
+function localize(key) {
+  return game.i18n.format(key);
+}
+
 function getHtmlElement(application, fallbackElement) {
   const element = fallbackElement ?? application?.element;
   if (!element) return null;
@@ -7,20 +45,24 @@ function getHtmlElement(application, fallbackElement) {
   if (globalThis.jQuery && element instanceof globalThis.jQuery) {
     return element[0] ?? null;
   }
-  return element[0] ?? null;
+  return element?.[0] ?? null;
+}
+
+function hasMovementFlags(tokenDocument) {
+  return Object.hasOwn(tokenDocument.flags ?? {}, MODULE_NAME);
 }
 
 function getDirectionalImages(tokenDocument, fallbackImage) {
-  return {
-    up: tokenDocument.getFlag(MODULE_NAME, "up") || fallbackImage,
-    down: tokenDocument.getFlag(MODULE_NAME, "down") || fallbackImage,
-    left: tokenDocument.getFlag(MODULE_NAME, "left") || fallbackImage,
-    right: tokenDocument.getFlag(MODULE_NAME, "right") || fallbackImage,
-    UL: tokenDocument.getFlag(MODULE_NAME, "UL") || fallbackImage,
-    UR: tokenDocument.getFlag(MODULE_NAME, "UR") || fallbackImage,
-    DL: tokenDocument.getFlag(MODULE_NAME, "DL") || fallbackImage,
-    DR: tokenDocument.getFlag(MODULE_NAME, "DR") || fallbackImage,
-  };
+  const images = {};
+  for (const direction of [...CARDINAL_DIRECTIONS, ...DIAGONAL_DIRECTIONS]) {
+    images[direction.key] =
+      tokenDocument.getFlag(MODULE_NAME, direction.key) || fallbackImage;
+  }
+  return images;
+}
+
+function setSheetPosition(sheet) {
+  if (typeof sheet.setPosition === "function") sheet.setPosition();
 }
 
 async function clearPrototypeSettings(tokenDocument, image) {
@@ -70,20 +112,13 @@ export async function createHudButtons(sheet, element) {
   imageBox.className = "image-box";
   middleColumn.append(imageBox);
 
-  const createHudButton = (
-    className,
-    title,
-    innerHtml,
-    onClick,
-    optionClass = "",
-  ) => {
+  const createHudButton = (className, title, onClick, optionClass = "") => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `movement-icon${optionClass ? ` ${optionClass}` : ""}`;
     button.dataset.action = className;
     button.title = title;
     button.setAttribute("aria-label", title);
-    button.innerHTML = innerHtml;
     button.addEventListener("click", onClick);
     return button;
   };
@@ -95,33 +130,33 @@ export async function createHudButtons(sheet, element) {
     onClick,
     optionClass = "option",
   ) => {
-    imageBox.append(
-      createHudButton(
-        className,
-        title,
-        `<i class="${iconClass}"></i>`,
-        onClick,
-        optionClass,
-      ),
-    );
+    const button = createHudButton(className, title, onClick, optionClass);
+    const icon = document.createElement("i");
+    icon.className = iconClass;
+    button.append(icon);
+    imageBox.append(button);
   };
 
   const appendImageButton = (className, title, src, onClick, label = "") => {
-    const labelMarkup = label ? `<div>${label}</div>` : "";
-    imageBox.append(
-      createHudButton(
-        className,
-        title,
-        `${labelMarkup}<img src="${src}" alt="${title}">`,
-        onClick,
-      ),
-    );
+    const button = createHudButton(className, title, onClick);
+
+    if (label) {
+      const labelElement = document.createElement("div");
+      labelElement.textContent = label;
+      button.append(labelElement);
+    }
+
+    const image = document.createElement("img");
+    image.src = src;
+    image.alt = title;
+    button.append(image);
+    imageBox.append(button);
   };
 
-  if (!tokenDocument.flags.hasOwnProperty(MODULE_NAME)) {
+  if (!hasMovementFlags(tokenDocument)) {
     appendActionButton(
       "set-images",
-      game.i18n.format("8BITMOVEMENT.activate"),
+      localize("8BITMOVEMENT.activate"),
       "far fa-plus-square",
       async () => {
         await initializeMovement(token.id);
@@ -135,7 +170,7 @@ export async function createHudButtons(sheet, element) {
   if (tokenDocument.getFlag(MODULE_NAME, "locked")) {
     appendActionButton(
       "unlock-images",
-      game.i18n.format("8BITMOVEMENT.unlock"),
+      localize("8BITMOVEMENT.unlock"),
       "fas fa-lock",
       async () => {
         await tokenDocument.setFlag(MODULE_NAME, "locked", false);
@@ -151,7 +186,7 @@ export async function createHudButtons(sheet, element) {
 
   appendActionButton(
     "lock-images",
-    game.i18n.format("8BITMOVEMENT.lock"),
+    localize("8BITMOVEMENT.lock"),
     "fas fa-lock-open",
     async () => {
       await tokenDocument.setFlag(MODULE_NAME, "locked", true);
@@ -159,82 +194,35 @@ export async function createHudButtons(sheet, element) {
     },
   );
 
-  appendImageButton(
-    "up-image",
-    game.i18n.format("8BITMOVEMENT.up"),
-    images.up,
-    async () => {
-      await imageLoader(token.id, sheet, "up");
-    },
-  );
-  appendImageButton(
-    "down-image",
-    game.i18n.format("8BITMOVEMENT.down"),
-    images.down,
-    async () => {
-      await imageLoader(token.id, sheet, "down");
-    },
-  );
-  appendImageButton(
-    "left-image",
-    game.i18n.format("8BITMOVEMENT.left"),
-    images.left,
-    async () => {
-      await imageLoader(token.id, sheet, "left");
-    },
-  );
-  appendImageButton(
-    "right-image",
-    game.i18n.format("8BITMOVEMENT.right"),
-    images.right,
-    async () => {
-      await imageLoader(token.id, sheet, "right");
-    },
-  );
+  for (const direction of CARDINAL_DIRECTIONS) {
+    appendImageButton(
+      direction.action,
+      localize(direction.labelKey),
+      images[direction.key],
+      async () => {
+        await imageLoader(token.id, sheet, direction.key);
+      },
+    );
+  }
 
   if (game.settings.get(MODULE_NAME, "diagonalMode")) {
-    appendImageButton(
-      "up-left-image",
-      game.i18n.format("8BITMOVEMENT.up-left"),
-      images.UL,
-      async () => {
-        await imageLoader(token.id, sheet, "UL");
-      },
-      "UL",
-    );
-    appendImageButton(
-      "up-right-image",
-      game.i18n.format("8BITMOVEMENT.up-right"),
-      images.UR,
-      async () => {
-        await imageLoader(token.id, sheet, "UR");
-      },
-      "UR",
-    );
-    appendImageButton(
-      "down-left-image",
-      game.i18n.format("8BITMOVEMENT.down-left"),
-      images.DL,
-      async () => {
-        await imageLoader(token.id, sheet, "DL");
-      },
-      "DL",
-    );
-    appendImageButton(
-      "down-right-image",
-      game.i18n.format("8BITMOVEMENT.down-right"),
-      images.DR,
-      async () => {
-        await imageLoader(token.id, sheet, "DR");
-      },
-      "DR",
-    );
+    for (const direction of DIAGONAL_DIRECTIONS) {
+      appendImageButton(
+        direction.action,
+        localize(direction.labelKey),
+        images[direction.key],
+        async () => {
+          await imageLoader(token.id, sheet, direction.key);
+        },
+        direction.hudLabel,
+      );
+    }
   }
 
   if (tokenDocument.getFlag(MODULE_NAME, "set")) {
     appendActionButton(
       "remove-from-prototype",
-      game.i18n.format("8BITMOVEMENT.delete"),
+      localize("8BITMOVEMENT.delete"),
       "fas fa-times",
       async () => {
         await clearPrototypeSettings(tokenDocument, images.down);
@@ -244,7 +232,7 @@ export async function createHudButtons(sheet, element) {
   } else {
     appendActionButton(
       "save-to-prototype",
-      game.i18n.format("8BITMOVEMENT.save"),
+      localize("8BITMOVEMENT.save"),
       "fas fa-address-card",
       async () => {
         await savePrototypeSettings(tokenDocument, images);
@@ -311,7 +299,12 @@ export async function createConfigButtons(sheet, element) {
     button.className = `${buttonClass} ${className}`.trim();
     button.title = title;
     button.setAttribute("aria-label", title);
-    button.innerHTML = `<i class="${iconClass}" inert=""></i><span>${text}</span>`;
+    const icon = document.createElement("i");
+    icon.className = iconClass;
+    icon.setAttribute("inert", "");
+    const label = document.createElement("span");
+    label.textContent = text;
+    button.append(icon, label);
     button.addEventListener("click", onClick);
     return button;
   };
@@ -367,7 +360,10 @@ export async function createConfigButtons(sheet, element) {
     previewButton.className = "movement-settings movement-preview-button";
     previewButton.title = title;
     previewButton.setAttribute("aria-label", title);
-    previewButton.innerHTML = `<img src="${src}" alt="${title}">`;
+    const previewImage = document.createElement("img");
+    previewImage.src = src;
+    previewImage.alt = title;
+    previewButton.append(previewImage);
     previewButton.addEventListener("click", async () => {
       await imageLoader(token.id, sheet, direction);
     });
@@ -378,11 +374,25 @@ export async function createConfigButtons(sheet, element) {
 
   const uniquePrefix = sheet.options?.uniqueId ?? token.uuid ?? token.id;
 
-  if (!token.flags.hasOwnProperty(MODULE_NAME)) {
-    createFormGroup(game.i18n.format("8BITMOVEMENT.activate_label")).append(
+  const addImagePickerGroup = (direction) => {
+    createFormGroup(
+      localize(direction.labelKey),
+      `${uniquePrefix}-${direction.action}-path`,
+    ).append(
+      createImagePickerField(
+        `${uniquePrefix}-${direction.action}`,
+        localize(direction.labelKey),
+        images[direction.key],
+        direction.key,
+      ),
+    );
+  };
+
+  if (!hasMovementFlags(token)) {
+    createFormGroup(localize("8BITMOVEMENT.activate_label")).append(
       createActionButton(
         "activate",
-        game.i18n.format("8BITMOVEMENT.activate"),
+        localize("8BITMOVEMENT.activate"),
         "far fa-plus-square",
         "Activate",
         async () => {
@@ -392,12 +402,12 @@ export async function createConfigButtons(sheet, element) {
       ),
     );
 
-    if (typeof sheet.setPosition === "function") sheet.setPosition();
+    setSheetPosition(sheet);
     return;
   }
 
   createCheckboxGroup(
-    game.i18n.format("8BITMOVEMENT.lock"),
+    localize("8BITMOVEMENT.lock"),
     `${uniquePrefix}-locked`,
     !!token.getFlag(MODULE_NAME, "locked"),
     async (event) => {
@@ -407,100 +417,16 @@ export async function createConfigButtons(sheet, element) {
   );
 
   if (token.getFlag(MODULE_NAME, "locked")) {
-    if (typeof sheet.setPosition === "function") sheet.setPosition();
+    setSheetPosition(sheet);
     return;
   }
 
-  createFormGroup(
-    game.i18n.format("8BITMOVEMENT.up"),
-    `${uniquePrefix}-up-image-path`,
-  ).append(
-    createImagePickerField(
-      `${uniquePrefix}-up-image`,
-      game.i18n.format("8BITMOVEMENT.up"),
-      images.up,
-      "up",
-    ),
-  );
-  createFormGroup(
-    game.i18n.format("8BITMOVEMENT.down"),
-    `${uniquePrefix}-down-image-path`,
-  ).append(
-    createImagePickerField(
-      `${uniquePrefix}-down-image`,
-      game.i18n.format("8BITMOVEMENT.down"),
-      images.down,
-      "down",
-    ),
-  );
-  createFormGroup(
-    game.i18n.format("8BITMOVEMENT.left"),
-    `${uniquePrefix}-left-image-path`,
-  ).append(
-    createImagePickerField(
-      `${uniquePrefix}-left-image`,
-      game.i18n.format("8BITMOVEMENT.left"),
-      images.left,
-      "left",
-    ),
-  );
-  createFormGroup(
-    game.i18n.format("8BITMOVEMENT.right"),
-    `${uniquePrefix}-right-image-path`,
-  ).append(
-    createImagePickerField(
-      `${uniquePrefix}-right-image`,
-      game.i18n.format("8BITMOVEMENT.right"),
-      images.right,
-      "right",
-    ),
-  );
+  for (const direction of CARDINAL_DIRECTIONS) addImagePickerGroup(direction);
 
   if (game.settings.get(MODULE_NAME, "diagonalMode")) {
-    createFormGroup(
-      game.i18n.format("8BITMOVEMENT.up-left"),
-      `${uniquePrefix}-up-left-image-path`,
-    ).append(
-      createImagePickerField(
-        `${uniquePrefix}-up-left-image`,
-        game.i18n.format("8BITMOVEMENT.up-left"),
-        images.UL,
-        "UL",
-      ),
-    );
-    createFormGroup(
-      game.i18n.format("8BITMOVEMENT.up-right"),
-      `${uniquePrefix}-up-right-image-path`,
-    ).append(
-      createImagePickerField(
-        `${uniquePrefix}-up-right-image`,
-        game.i18n.format("8BITMOVEMENT.up-right"),
-        images.UR,
-        "UR",
-      ),
-    );
-    createFormGroup(
-      game.i18n.format("8BITMOVEMENT.down-left"),
-      `${uniquePrefix}-down-left-image-path`,
-    ).append(
-      createImagePickerField(
-        `${uniquePrefix}-down-left-image`,
-        game.i18n.format("8BITMOVEMENT.down-left"),
-        images.DL,
-        "DL",
-      ),
-    );
-    createFormGroup(
-      game.i18n.format("8BITMOVEMENT.down-right"),
-      `${uniquePrefix}-down-right-image-path`,
-    ).append(
-      createImagePickerField(
-        `${uniquePrefix}-down-right-image`,
-        game.i18n.format("8BITMOVEMENT.down-right"),
-        images.DR,
-        "DR",
-      ),
-    );
+    for (const direction of DIAGONAL_DIRECTIONS) {
+      addImagePickerGroup(direction);
+    }
   }
 
   const actions = document.createElement("div");
@@ -511,9 +437,9 @@ export async function createConfigButtons(sheet, element) {
     token.getFlag(MODULE_NAME, "set")
       ? createActionButton(
           "remove",
-          game.i18n.format("8BITMOVEMENT.delete"),
+          localize("8BITMOVEMENT.delete"),
           "fa-solid fa-trash",
-          game.i18n.format("8BITMOVEMENT.delete"),
+          localize("8BITMOVEMENT.delete"),
           async () => {
             await clearPrototypeSettings(token, images.down);
             sheet.render();
@@ -523,9 +449,9 @@ export async function createConfigButtons(sheet, element) {
         )
       : createActionButton(
           "save",
-          game.i18n.format("8BITMOVEMENT.save"),
+          localize("8BITMOVEMENT.save"),
           "fa-solid fa-floppy-disk",
-          game.i18n.format("8BITMOVEMENT.save"),
+          localize("8BITMOVEMENT.save"),
           async (event) => {
             event.preventDefault();
             await savePrototypeSettings(token, images);
@@ -536,5 +462,5 @@ export async function createConfigButtons(sheet, element) {
         ),
   );
 
-  if (typeof sheet.setPosition === "function") sheet.setPosition();
+  setSheetPosition(sheet);
 }

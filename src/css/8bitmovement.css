@@ -29,16 +29,24 @@
 }
 #token-hud .movement-icon.option {
     margin: 24px 0;
-    font-size: 30px;
+    width: 34px;
+    flex: 0 0 34px;
+    font-size: 24px;
 }
 #token-hud .movement-icon.option.middle {
     margin: 150px 0;
-    font-size: 30px;
+    width: 34px;
+    flex: 0 0 34px;
+    font-size: 24px;
+    background: transparent;
 }
 #token-hud .movement-icon img{
     border: none;
     max-width: 100%;
     max-height: 100%;
+}
+#token-hud .movement-icon:not(.option) {
+    background: transparent;
 }
 
 .movement-settings {

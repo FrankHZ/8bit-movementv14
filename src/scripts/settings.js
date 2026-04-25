@@ -6,7 +6,7 @@ export const registerSettings = function () {
     config: true,
     default: true,
     type: Boolean,
-    onChange: () => window.location.reload(),
+    requiresReload: true,
   });
   game.settings.register("8bit-movement", "tokenMode", {
     name: game.i18n.format("8BITMOVEMENT.Token-Mode_name"),
@@ -15,7 +15,7 @@ export const registerSettings = function () {
     config: true,
     default: true,
     type: Boolean,
-    onChange: () => window.location.reload(),
+    requiresReload: true,
   });
   game.settings.register("8bit-movement", "settingsMode", {
     name: game.i18n.format("8BITMOVEMENT.Settings-Mode_name"),
@@ -24,7 +24,7 @@ export const registerSettings = function () {
     config: true,
     default: true,
     type: Boolean,
-    onChange: () => window.location.reload(),
+    requiresReload: true,
   });
   game.settings.register("8bit-movement", "diagonalMode", {
     name: game.i18n.format("8BITMOVEMENT.Diagonal-Mode_name"),
@@ -33,7 +33,7 @@ export const registerSettings = function () {
     config: true,
     default: false,
     type: Boolean,
-    onChange: () => window.location.reload(),
+    requiresReload: true,
   });
   game.settings.register("8bit-movement", "warnings", {
     name: game.i18n.format("8BITMOVEMENT.Settings-Warn_name"),
@@ -42,7 +42,7 @@ export const registerSettings = function () {
     config: true,
     default: false,
     type: Boolean,
-    onChange: () => window.location.reload(),
+    requiresReload: true,
   });
   game.settings.register("8bit-movement", "disableRotationAnimation", {
     name: game.i18n.format("8BITMOVEMENT.Disable-Rotation-Animation_name"),
@@ -51,6 +51,6 @@ export const registerSettings = function () {
     config: true,
     default: false,
     type: Boolean,
-    onChange: () => window.location.reload(),
+    requiresReload: true,
   });
 };

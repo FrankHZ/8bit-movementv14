@@ -1,9 +1,5 @@
-//change image titles for tooltips from Foundry API looks nicer.
 export const MODULE_NAME = "8bit-movement";
 const __8bitPersistTimers = new Map();
-
-// --- 8bit-movement: smooth move + no-fade helpers ---
-const __8BIT_SWAP_DELAY_MS = 200; // delay to let movement tween start; adjust to taste
 
 function __8bit_forceOpaque(placeable) {
   try {
@@ -16,22 +12,7 @@ function __8bit_forceOpaque(placeable) {
   }
 }
 
-async function __8bit_swapAfterMoveNoFade(doc, placeable, src) {
-  try {
-    if (!doc || !placeable || !src) return;
-    if (placeable.texture?.src === src) return;
-    await doc.update({ "texture.src": src }, { animate: false });
-    const kicks = [0, 16, 48, 96, 160, 240];
-    for (const t of kicks) setTimeout(() => __8bit_forceOpaque(placeable), t);
-    if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(() => __8bit_forceOpaque(placeable));
-    }
-  } catch (e) {
-    console.warn("8bit-movement: swapAfterMoveNoFade failed", e);
-  }
-}
-
-/** Preview the given src on the on-canvas token (no document write, no refresh). */
+/** Preview a texture on the canvas token without writing to the Token document. */
 function __8bit_previewMesh(tokenId, src) {
   try {
     const pl = canvas?.tokens?.get(tokenId);
@@ -44,15 +25,15 @@ function __8bit_previewMesh(tokenId, src) {
     if (pl.mesh) pl.mesh.texture = tex;
     else if (pl.icon) pl.icon.texture = tex;
     __8bit_forceOpaque(pl);
-  } catch (e) {
-    /* ignore preview errors */
+  } catch {
+    // Preview failures are non-fatal; the persisted document update still runs.
   }
 }
 
 /**
- * Sets up the flags for the image paths when pressing the [+] button on the Token HUD or Token Config.
- * does some string searching to figure out if you used upper case or lower case for the direction tag on your images.
- * @param {string} tokenId | id string of token which is getting its images set.
+ * Initialize directional image flags from the token's current texture.
+ * If the filename contains a direction tag, sibling texture paths are inferred.
+ * @param {string} tokenId Token ID to configure.
  */
 export async function initializeMovement(tokenId) {
   const diagonalMode = game.settings.get(MODULE_NAME, "diagonalMode");
@@ -72,7 +53,7 @@ export async function initializeMovement(tokenId) {
     "RIGHT",
   ];
   const hasDirection = directions.find((d) => imagePath.includes(d));
-  const isLowerCase = directions.indexOf(hasDirection) < 4 ? true : false;
+  const isLowerCase = directions.indexOf(hasDirection) < 4;
   directions = isLowerCase
     ? directions
     : directions.map((d) => d.toUpperCase());
@@ -168,15 +149,14 @@ export async function initializeMovement(tokenId) {
 }
 
 /**
- * This function opens a file picker with the right limitation on what type of file is possible (images and webM).
- * Sets the path of the file in the appropriate flag on the Token.
- * @param {string} tokenId | id string of the token being moved.
- * @param {object} sheet | sheet is an object passed on via renderTokenHud hook.
- * @param {string} direction | string indicating the direction of the token.
+ * Open an image/video picker and save the selected path to a directional flag.
+ * @param {string} tokenId Token ID to configure.
+ * @param {object} sheet Token HUD or Token Config sheet to re-render.
+ * @param {string} direction Directional flag key to update.
  */
 export async function imageLoader(tokenId, sheet, direction) {
   const token = canvas.tokens.get(tokenId);
-  let pickedFile = await new FilePicker({
+  const pickedFile = await new FilePicker({
     type: "imagevideo",
     callback: async (path) => {
       await token.document.setFlag(MODULE_NAME, direction, path);
@@ -187,18 +167,17 @@ export async function imageLoader(tokenId, sheet, direction) {
 }
 
 /**
- * This function adds a listener for the keyup event updating the token in motion with WSAD/Arrow keys,
- * maintains a 0 rotation on SHIFT usage for tokens with the right flags.
+ * Register token update listeners that preview and persist directional textures.
  */
 export async function addListener() {
   Hooks.on("refreshToken", (pl) => {
     try {
       const next = pl?.document?.getFlag(MODULE_NAME, "__nextTexture");
       if (next) __8bit_previewMesh(pl.id, next);
-    } catch (_e) {}
+    } catch {}
   });
   const diagonalMode = game.settings.get(MODULE_NAME, "diagonalMode");
-  Hooks.on("preUpdateToken", function changeImage(token, change, options) {
+  Hooks.on("preUpdateToken", function changeImage(token, change) {
     if (!token.flags[MODULE_NAME]) return;
     if (
       !token.getFlag(MODULE_NAME, "up") &&
@@ -363,22 +342,20 @@ export async function addListener() {
   });
 }
 
-// Ensure no lingering fade/opacity after animated movement completes
-
-// Post-update: do the direction swap AFTER the move has begun, to keep movement smooth.
-Hooks.on("updateToken", async (doc, changes, options, userId) => {
+// Persist previewed textures after movement begins so animated token movement stays smooth.
+Hooks.on("updateToken", async (doc, changes) => {
   try {
     const token = canvas?.tokens?.get(doc.id);
     if (!token) return;
 
-    // Transient flag from preUpdateToken
+    // Transient flag set by preUpdateToken.
     const next =
       (changes?.flags &&
         changes.flags["8bit-movement"] &&
         changes.flags["8bit-movement"].__nextTexture) ||
       doc.getFlag("8bit-movement", "__nextTexture");
 
-    // Debounce persistence until movement fully settles (prevents teleport on drawn paths)
+    // Debounce persistence until movement settles to avoid jumps on drawn paths.
     if (next || "x" in changes || "y" in changes) {
       const prev = __8bitPersistTimers.get(doc.id);
       if (prev) clearTimeout(prev);
@@ -399,13 +376,13 @@ Hooks.on("updateToken", async (doc, changes, options, userId) => {
             const kicks = [0, 48, 120, 240];
             for (const t of kicks) setTimeout(() => __8bit_forceOpaque(tk), t);
           }
-        } catch (_e) {}
+        } catch {}
         __8bitPersistTimers.delete(doc.id);
       }, 800);
       __8bitPersistTimers.set(doc.id, handle);
     }
 
-    // Also keep opacity solid during any movement frame
+    // Keep opacity solid during movement and texture swaps.
     const movedNow = "x" in changes || "y" in changes;
     const swapped = !!next || (changes?.texture && "src" in changes.texture);
     if (movedNow || swapped) {
