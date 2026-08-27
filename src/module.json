@@ -2,13 +2,13 @@
   "name": "8bit-movement-frankhz",
   "id": "8bit-movement-frankhz",
   "title": "Token movement 8bit style v14",
-  "description": "Setup your tokens to have four or eight directions when moving them with WASD or arrow keys.<br>Easy to setup using the Token HUD or Token config screen. <br>Configure settings to choose your preferred method or whether players or only the GM can make alterations.",
+  "description": "Configure four- or eight-direction Token movement with separate images or a row-mapped RPG Maker sprite sheet.<br>Setup is available from the Token HUD and Token Config, with per-Token direction mode, previews, and prototype saving.",
   "authors": [
     {
       "name": "FrankHZ"
     }
   ],
-  "version": "1.4.2",
+  "version": "1.5.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14.360"

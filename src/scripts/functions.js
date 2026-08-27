@@ -1,5 +1,6 @@
 import {
   DIRECTIONAL_IMAGE_MODE,
+  getTokenDiagonalMode,
   MODULE_NAME,
   SPRITE_SHEET_MODE,
 } from "./constants.js";
@@ -7,6 +8,8 @@ import {
   applySpriteSheetDirection,
   getSpriteSheetFacing,
   isSpriteSheetMode,
+  normalizeSpriteSheetDirection,
+  withSpriteSheetDefaults,
 } from "./sprite-sheet.js";
 
 export { MODULE_NAME };
@@ -57,10 +60,20 @@ function __8bit_previewMesh(tokenId, src) {
  * Initialize directional image flags from the token's current texture.
  * If the filename contains a direction tag, sibling texture paths are inferred.
  * @param {string} tokenId Token ID to configure.
+ * @param {object} [options]
+ * @param {boolean} [options.render=true] Re-render applications bound to the Token.
  */
-export async function initializeMovement(tokenId) {
-  const diagonalMode = game.settings.get(MODULE_NAME, "diagonalMode");
+export async function initializeMovement(tokenId, { render = true } = {}) {
   const token = canvas.tokens.get(tokenId);
+  if (!token) return;
+  const hasExistingConfig = Object.hasOwn(
+    token.document.flags ?? {},
+    MODULE_NAME,
+  );
+  const diagonalMode = hasExistingConfig
+    ? getTokenDiagonalMode(token)
+    : false;
+  const textureSrc = token.document.texture.src;
   const imagePath = token.document.texture.src.substring(
     token.document.texture.src.lastIndexOf("/") + 1,
     token.document.texture.src.lastIndexOf("."),
@@ -84,127 +97,69 @@ export async function initializeMovement(tokenId) {
     directions = directions.concat(
       isLowerCase ? ["ul", "ur", "dl", "dr"] : ["UL", "UR", "DL", "DR"],
     );
-  if (!hasDirection) {
-    await token.document.setFlag(MODULE_NAME, "up", token.document.texture.src);
-    await token.document.setFlag(
-      MODULE_NAME,
-      "down",
-      token.document.texture.src,
-    );
-    await token.document.setFlag(
-      MODULE_NAME,
-      "left",
-      token.document.texture.src,
-    );
-    await token.document.setFlag(
-      MODULE_NAME,
-      "right",
-      token.document.texture.src,
-    );
-    if (diagonalMode) {
-      await token.document.setFlag(
-        MODULE_NAME,
-        "UL",
-        token.document.texture.src,
-      );
-      await token.document.setFlag(
-        MODULE_NAME,
-        "UR",
-        token.document.texture.src,
-      );
-      await token.document.setFlag(
-        MODULE_NAME,
-        "DL",
-        token.document.texture.src,
-      );
-      await token.document.setFlag(
-        MODULE_NAME,
-        "DR",
-        token.document.texture.src,
-      );
-    }
-  } else {
-    await token.document.setFlag(
-      MODULE_NAME,
-      "up",
-      token.document.texture.src.replace(hasDirection, directions[0]),
-    );
-    await token.document.setFlag(
-      MODULE_NAME,
-      "down",
-      token.document.texture.src.replace(hasDirection, directions[1]),
-    );
-    await token.document.setFlag(
-      MODULE_NAME,
-      "left",
-      token.document.texture.src.replace(hasDirection, directions[2]),
-    );
-    await token.document.setFlag(
-      MODULE_NAME,
-      "right",
-      token.document.texture.src.replace(hasDirection, directions[3]),
-    );
-    if (diagonalMode) {
-      await token.document.setFlag(
-        MODULE_NAME,
-        "UL",
-        token.document.texture.src.replace(hasDirection, directions[8]),
-      );
-      await token.document.setFlag(
-        MODULE_NAME,
-        "UR",
-        token.document.texture.src.replace(hasDirection, directions[9]),
-      );
-      await token.document.setFlag(
-        MODULE_NAME,
-        "DL",
-        token.document.texture.src.replace(hasDirection, directions[10]),
-      );
-      await token.document.setFlag(
-        MODULE_NAME,
-        "DR",
-        token.document.texture.src.replace(hasDirection, directions[11]),
-      );
-    }
-  }
-
-  await token.document.update({
+  const sourceFor = (index) =>
+    hasDirection ? textureSrc.replace(hasDirection, directions[index]) : textureSrc;
+  const update = {
+    [`flags.${MODULE_NAME}.up`]: sourceFor(0),
+    [`flags.${MODULE_NAME}.down`]: sourceFor(1),
+    [`flags.${MODULE_NAME}.left`]: sourceFor(2),
+    [`flags.${MODULE_NAME}.right`]: sourceFor(3),
     [`flags.${MODULE_NAME}.mode`]: DIRECTIONAL_IMAGE_MODE,
+    [`flags.${MODULE_NAME}.diagonalMode`]: diagonalMode,
     [`flags.${MODULE_NAME}.-=spriteSheet`]: null,
     lockRotation: true,
     rotation: 1,
-  });
+  };
+  if (diagonalMode) {
+    update[`flags.${MODULE_NAME}.UL`] = sourceFor(8);
+    update[`flags.${MODULE_NAME}.UR`] = sourceFor(9);
+    update[`flags.${MODULE_NAME}.DL`] = sourceFor(10);
+    update[`flags.${MODULE_NAME}.DR`] = sourceFor(11);
+  }
+  await token.document.update(update, { render });
 }
 
 /**
- * Configure a token to use a fixed 3x3, eight-direction sprite sheet.
+ * Configure a token to use a row-mapped RPG Maker-style sprite sheet.
  * @param {string} tokenId Token ID to configure.
  * @param {string} src Sprite sheet image path.
+ * @param {object} [options]
+ * @param {boolean} [options.render=true] Re-render applications bound to the Token.
  */
-export async function initializeSpriteSheet(tokenId, src) {
+export async function initializeSpriteSheet(
+  tokenId,
+  src,
+  { render = true } = {},
+) {
   const token = canvas.tokens.get(tokenId);
   const image = String(src ?? "").trim();
   if (!token || !image) return;
 
-  const current = token.document.getFlag(MODULE_NAME, "spriteSheet") ?? {};
-  const spriteSheet = {
+  const current = withSpriteSheetDefaults(
+    token.document.getFlag(MODULE_NAME, "spriteSheet") ?? {},
+  );
+  const spriteSheet = withSpriteSheetDefaults({
+    ...current,
     src: image,
-    facing: current.facing || "down",
-    scale: Number.isFinite(Number(current.scale)) ? Number(current.scale) : 1,
-    offsetX: Number.isFinite(Number(current.offsetX))
-      ? Number(current.offsetX)
-      : 0,
-    offsetY: Number.isFinite(Number(current.offsetY))
-      ? Number(current.offsetY)
-      : 0,
-  };
-
-  await token.document.update({
-    [`flags.${MODULE_NAME}.mode`]: SPRITE_SHEET_MODE,
-    [`flags.${MODULE_NAME}.spriteSheet`]: spriteSheet,
-    [`flags.${MODULE_NAME}.-=__nextTexture`]: null,
-    lockRotation: true,
   });
+  const hasExistingConfig = Object.hasOwn(
+    token.document.flags ?? {},
+    MODULE_NAME,
+  );
+  const diagonalMode = hasExistingConfig
+    ? getTokenDiagonalMode(token)
+    : false;
+
+  await token.document.update(
+    {
+      [`flags.${MODULE_NAME}.mode`]: SPRITE_SHEET_MODE,
+      [`flags.${MODULE_NAME}.diagonalMode`]: diagonalMode,
+      [`flags.${MODULE_NAME}.spriteSheet`]: spriteSheet,
+      [`flags.${MODULE_NAME}.-=__nextTexture`]: null,
+      lockRotation: true,
+    },
+    { render },
+  );
   await applySpriteSheetDirection(token, spriteSheet.facing);
 }
 
@@ -219,7 +174,10 @@ export async function imageLoader(tokenId, sheet, direction) {
   const pickedFile = await new FilePicker({
     type: "imagevideo",
     callback: async (path) => {
-      await token.document.setFlag(MODULE_NAME, direction, path);
+      await token.document.update(
+        { [`flags.${MODULE_NAME}.${direction}`]: path },
+        { render: false },
+      );
       sheet.render();
     },
   });
@@ -266,21 +224,29 @@ function rotationDirection(rotation, eightWay) {
 }
 
 function setSpriteSheetFacing(token, change, direction) {
-  if (!direction || direction === getSpriteSheetFacing(token)) {
-    void applySpriteSheetDirection(canvas?.tokens?.get(token.id), direction);
+  if (!direction) return;
+
+  const facing = normalizeSpriteSheetDirection(direction);
+  if (facing === getSpriteSheetFacing(token)) {
+    void applySpriteSheetDirection(canvas?.tokens?.get(token.id), facing);
     return;
   }
   foundry.utils.setProperty(
     change,
     `flags.${MODULE_NAME}.spriteSheet.facing`,
-    direction,
+    facing,
   );
-  void applySpriteSheetDirection(canvas?.tokens?.get(token.id), direction);
+  void applySpriteSheetDirection(canvas?.tokens?.get(token.id), facing);
 }
 
 function setDirectionalTexture(token, change, direction) {
   const flag = IMAGE_FLAG_BY_DIRECTION[direction];
-  const src = flag ? token.getFlag(MODULE_NAME, flag) : null;
+  let src = flag ? token.getFlag(MODULE_NAME, flag) : null;
+  if (!src && direction.startsWith("up-")) {
+    src = token.getFlag(MODULE_NAME, "up");
+  } else if (!src && direction.startsWith("down-")) {
+    src = token.getFlag(MODULE_NAME, "down");
+  }
   if (!src || token.texture.src === src) return;
 
   foundry.utils.setProperty(
@@ -302,10 +268,10 @@ export async function addListener() {
       if (next) __8bit_previewMesh(pl.id, next);
     } catch {}
   });
-  const diagonalMode = game.settings.get(MODULE_NAME, "diagonalMode");
   Hooks.on("preUpdateToken", function changeImage(token, change) {
     if (!token.flags[MODULE_NAME]) return;
     const spriteSheetMode = isSpriteSheetMode(token);
+    const diagonalMode = getTokenDiagonalMode(token);
     if (
       !spriteSheetMode &&
       !token.getFlag(MODULE_NAME, "up") &&
@@ -324,30 +290,15 @@ export async function addListener() {
       foundry.utils.hasProperty(change, "y");
     const rotation = foundry.utils.hasProperty(change, "rotation");
     if (move) {
-      if (!spriteSheetMode && diagonalMode) {
-        if (
-          !token.getFlag(MODULE_NAME, "UL") &&
-          !token.getFlag(MODULE_NAME, "UR") &&
-          !token.getFlag(MODULE_NAME, "DL") &&
-          !token.getFlag(MODULE_NAME, "DR")
-        ) {
-          if (!game.settings.get(MODULE_NAME, "warnings"))
-            ui.notifications.warn(
-              game.i18n.localize("8BITMOVEMENT.Warn.No_Images_Diagonal"),
-            );
-          return;
-        }
-      }
-
       const direction = movementDirection(
         token,
         change,
-        spriteSheetMode || diagonalMode,
+        diagonalMode,
       );
       if (spriteSheetMode) setSpriteSheetFacing(token, change, direction);
       else setDirectionalTexture(token, change, direction);
     } else if (rotation) {
-      const direction = rotationDirection(change.rotation, spriteSheetMode);
+      const direction = rotationDirection(change.rotation, diagonalMode);
       if (spriteSheetMode) setSpriteSheetFacing(token, change, direction);
       else setDirectionalTexture(token, change, direction);
     }

@@ -9,8 +9,8 @@ This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It h
 - Set directional token images from the Token HUD
 - Configure the same images from Token Config
 - Auto-detect direction suffixes in filenames during setup
-- Optional diagonal support using `UL`, `UR`, `DL`, and `DR` from either setup UI
-- Single-image 3x3 sprite-sheet mode with eight directional cells
+- Per-Token four/eight-direction switching in both image modes
+- Single-character RPG Maker sprite-sheet mode with configurable frame size
 - Save directional settings back to the actor's prototype token
 - Optional warning controls
 - Optional rotation animation override when `libWrapper` is active
@@ -32,33 +32,41 @@ Examples:
 
 Lowercase suffixes also work.
 
-## Single 3x3 sprite sheets
+## RPG Maker sprite sheets
 
-Sprite-sheet mode reads eight facings from one image without playing a walk
-animation. The center cell is unused. The sheet layout is:
+Sprite-sheet mode accepts one RPG Maker-style image. Each row can represent a
+direction and each column can be an animation frame. The default four-direction
+mapping is:
 
-| | | |
-| --- | --- | --- |
-| Up Left | Up | Up Right |
-| Left | Unused | Right |
-| Down Left | Down | Down Right |
+| Row | Direction |
+| --- | --- |
+| 1 | Down |
+| 2 | Left |
+| 3 | Right |
+| 4 | Up |
 
-The top-center cell faces away from the camera and the bottom-center cell faces
-toward the camera. For the cleanest cropping, use an image whose width and
-height are divisible by three. Transparent PNG or WebP files are recommended.
+Enter the width and height of one frame and, if needed, a source crop X/Y offset
+in Token Config. Then assign a one-based source row to each active direction.
+Rows may be reused, so a missing diagonal can point to the same row as Up or
+Down. Enabling eight directions exposes four additional row assignments.
 
-Sprite-sheet mode is always eight-directional and does not depend on the global
-Diagonal mode setting. It stores only the current facing in the Token flags;
-the Token document's texture path is not rewritten on each move.
+The texture does not need to be evenly divisible by the frame size. Validation
+only requires positive frame sizes and row numbers, non-negative crop offsets,
+and enough texture bounds to contain every configured first-frame crop. The
+module currently displays only the first frame in each row; it does not yet
+play the walk animation. The current facing is stored in Token flags, while the
+Token document's texture path is not rewritten on each move.
 
 ## Setup
 
 Enable the module in a world, then configure the module settings from Foundry's Configure Settings dialog.
 
-- **Token HUD mode** adds movement image buttons to the token HUD.
+- **Token HUD mode** adds movement image controls to the token HUD. Its panel
+  can be collapsed to a compact title bar and reopened with the visibility toggle.
 - **Token Settings mode** adds the same movement image controls to the Token Config appearance tab.
-- **Diagonal mode** enables four extra diagonal image slots.
-- **Single 3x3 sprite sheet** can be selected as an alternative to separate
+- **Use eight directions for this Token** enables the four diagonal directions
+  for either separate images or a sprite sheet. It is stored per Token.
+- **RPG Maker sprite sheet** can be selected as an alternative to separate
   direction images from the Token HUD or Token Config.
 - **Only allow GM changes** restricts setup controls to GMs.
 - **Disable Rotation Animation** registers a `libWrapper` wrapper that suppresses Foundry's rotation animation during combined texture/rotation updates.
@@ -108,7 +116,7 @@ This repo includes a small helper for Foundry's Package Release API.
    npm run release:publish
    ```
 
-Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.4.0`. The API payload uses that tag for the version-specific manifest URL.
+Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.0`. The API payload uses that tag for the version-specific manifest URL.
 
 ## Credits
 

@@ -1,17 +1,21 @@
 Change Log for Token Movement 8-bit Style.
 
-1.4.2:
+1.5.0:
 
-    -Removed the 3x3 text label from the sprite-sheet preview in the Token HUD.
-    -Changing image mode in Token Config no longer opens the file picker automatically.
-
-1.4.1:
-
-    -Added a single-image 3x3 sprite-sheet mode for eight directional facings.
-    -The center cell is unused; top-center faces away and bottom-center faces toward the camera.
+    -Replaced the fixed 3x3 sheet layout with a row-mapped RPG Maker layout that uses the first animation frame for each direction.
+    -Added user-configurable frame size, source crop offsets, per-direction source rows, bounds validation, and cropped direction previews to Token Config. Multiple directions may share one source row.
+    -Changed diagonal mode from a world setting to a per-Token four/eight-direction toggle shared by separate-image and sprite-sheet modes; the old setting remains hidden as a compatibility fallback.
+    -Redesigned the Token HUD with a compact mode toolbar, compass-style directional previews, RPG Maker frame previews, and clearer edit/lock/clear actions.
+    -Added a per-Token HUD panel show/hide toggle whose collapsed state survives HUD re-renders for the current browser session.
+    -Split Token HUD, Token Config, shared UI data, and DOM helpers into dedicated UI modules.
+    -Fixed the two activation buttons in Token Config to use a stable equal-width layout.
+    -Fixed Token Config file-picker buttons by using Foundry's native picker events for image selection.
+    -Separated Token-only clearing from Clear All: the HUD clears only the current Token, while Token Config provides Save to Prototype, Clear Token, and Clear All.
+    -Prevented 8bit Movement edits from re-rendering the entire Token Config; only the module fieldset is rebuilt when its structure changes.
     -Sprite-sheet direction changes are synchronized through Token flags without rewriting texture.src.
     -Added per-token sprite scale and X/Y offset controls.
     -Prototype Token saving now preserves diagonal and sprite-sheet configuration.
+    -Changing image mode in Token Config no longer opens the file picker automatically.
     -Aligned settings, flags, and libWrapper registration with the active module ID.
 
 1.0.2:

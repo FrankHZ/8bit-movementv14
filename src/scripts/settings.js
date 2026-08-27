@@ -32,10 +32,9 @@ export const registerSettings = function () {
     name: game.i18n.format("8BITMOVEMENT.Diagonal-Mode_name"),
     hint: game.i18n.format("8BITMOVEMENT.Diagonal-Mode_hint"),
     scope: "world",
-    config: true,
+    config: false,
     default: false,
     type: Boolean,
-    requiresReload: true,
   });
   game.settings.register(MODULE_NAME, "warnings", {
     name: game.i18n.format("8BITMOVEMENT.Settings-Warn_name"),
