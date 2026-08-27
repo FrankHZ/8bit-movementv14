@@ -1,4 +1,13 @@
-import { MODULE_NAME, imageLoader, initializeMovement } from "./functions.js";
+import {
+  MODULE_NAME,
+  imageLoader,
+  initializeMovement,
+  initializeSpriteSheet,
+} from "./functions.js";
+import {
+  DIRECTIONAL_IMAGE_MODE,
+  SPRITE_SHEET_MODE,
+} from "./constants.js";
 
 const CARDINAL_DIRECTIONS = [
   { key: "up", action: "up-image", labelKey: "8BITMOVEMENT.up" },
@@ -52,6 +61,16 @@ function hasMovementFlags(tokenDocument) {
   return Object.hasOwn(tokenDocument.flags ?? {}, MODULE_NAME);
 }
 
+function getMovementMode(tokenDocument) {
+  return tokenDocument.getFlag(MODULE_NAME, "mode") === SPRITE_SHEET_MODE
+    ? SPRITE_SHEET_MODE
+    : DIRECTIONAL_IMAGE_MODE;
+}
+
+function getSpriteSheetConfig(tokenDocument) {
+  return tokenDocument.getFlag(MODULE_NAME, "spriteSheet") ?? {};
+}
+
 function getDirectionalImages(tokenDocument, fallbackImage) {
   const images = {};
   for (const direction of [...CARDINAL_DIRECTIONS, ...DIAGONAL_DIRECTIONS]) {
@@ -67,13 +86,13 @@ function setSheetPosition(sheet) {
 
 async function clearPrototypeSettings(tokenDocument, image) {
   await game.actors.get(tokenDocument.actor.id).update({
-    "prototypeToken.flags.-=8bit-movement": null,
+    [`prototypeToken.flags.-=${MODULE_NAME}`]: null,
     "prototypeToken.texture.src": image,
     "prototypeToken.lockRotation": false,
   });
 
   await tokenDocument.update({
-    "flags.-=8bit-movement": null,
+    [`flags.-=${MODULE_NAME}`]: null,
     "texture.src": image,
     lockRotation: false,
     rotation: 0,
@@ -81,19 +100,35 @@ async function clearPrototypeSettings(tokenDocument, image) {
 }
 
 async function savePrototypeSettings(tokenDocument, images) {
+  const movementFlags = foundry.utils.deepClone(
+    tokenDocument.flags?.[MODULE_NAME] ?? {},
+  );
+  movementFlags.set = true;
+  delete movementFlags.__nextTexture;
+  const textureSrc =
+    getMovementMode(tokenDocument) === SPRITE_SHEET_MODE
+      ? tokenDocument.texture.src
+      : images.down;
+
   await game.actors.get(tokenDocument.actor.id).update({
-    "prototypeToken.flags.8bit-movement": {
-      up: images.up,
-      down: images.down,
-      left: images.left,
-      right: images.right,
-      set: true,
-    },
-    "prototypeToken.texture.src": images.down,
+    [`prototypeToken.flags.${MODULE_NAME}`]: movementFlags,
+    "prototypeToken.texture.src": textureSrc,
     "prototypeToken.lockRotation": true,
   });
 
   await tokenDocument.setFlag(MODULE_NAME, "set", true);
+}
+
+async function browseSpriteSheet(tokenDocument, sheet) {
+  const picker = new FilePicker({
+    type: "image",
+    current: getSpriteSheetConfig(tokenDocument).src || "",
+    callback: async (path) => {
+      await initializeSpriteSheet(tokenDocument.id, path);
+      sheet.render();
+    },
+  });
+  picker.browse();
 }
 
 export async function createHudButtons(sheet, element) {
@@ -164,6 +199,15 @@ export async function createHudButtons(sheet, element) {
       },
       "option middle",
     );
+    appendActionButton(
+      "set-sprite-sheet",
+      localize("8BITMOVEMENT.Sprite-Sheet-Activate"),
+      "fas fa-table-cells-large",
+      async () => {
+        await browseSpriteSheet(tokenDocument, sheet);
+      },
+      "option middle",
+    );
     return;
   }
 
@@ -183,6 +227,7 @@ export async function createHudButtons(sheet, element) {
 
   const fallbackImage = tokenDocument.texture?.src ?? token.actor?.img ?? "";
   const images = getDirectionalImages(tokenDocument, fallbackImage);
+  const movementMode = getMovementMode(tokenDocument);
 
   appendActionButton(
     "lock-images",
@@ -194,19 +239,18 @@ export async function createHudButtons(sheet, element) {
     },
   );
 
-  for (const direction of CARDINAL_DIRECTIONS) {
+  if (movementMode === SPRITE_SHEET_MODE) {
+    const spriteSheet = getSpriteSheetConfig(tokenDocument);
     appendImageButton(
-      direction.action,
-      localize(direction.labelKey),
-      images[direction.key],
+      "sprite-sheet-image",
+      localize("8BITMOVEMENT.Sprite-Sheet-Image"),
+      spriteSheet.src || fallbackImage,
       async () => {
-        await imageLoader(token.id, sheet, direction.key);
+        await browseSpriteSheet(tokenDocument, sheet);
       },
     );
-  }
-
-  if (game.settings.get(MODULE_NAME, "diagonalMode")) {
-    for (const direction of DIAGONAL_DIRECTIONS) {
+  } else {
+    for (const direction of CARDINAL_DIRECTIONS) {
       appendImageButton(
         direction.action,
         localize(direction.labelKey),
@@ -214,8 +258,21 @@ export async function createHudButtons(sheet, element) {
         async () => {
           await imageLoader(token.id, sheet, direction.key);
         },
-        direction.hudLabel,
       );
+    }
+
+    if (game.settings.get(MODULE_NAME, "diagonalMode")) {
+      for (const direction of DIAGONAL_DIRECTIONS) {
+        appendImageButton(
+          direction.action,
+          localize(direction.labelKey),
+          images[direction.key],
+          async () => {
+            await imageLoader(token.id, sheet, direction.key);
+          },
+          direction.hudLabel,
+        );
+      }
     }
   }
 
@@ -225,7 +282,12 @@ export async function createHudButtons(sheet, element) {
       localize("8BITMOVEMENT.delete"),
       "fas fa-times",
       async () => {
-        await clearPrototypeSettings(tokenDocument, images.down);
+        await clearPrototypeSettings(
+          tokenDocument,
+          movementMode === SPRITE_SHEET_MODE
+            ? tokenDocument.texture.src
+            : images.down,
+        );
         sheet.render();
       },
     );
@@ -320,14 +382,61 @@ export async function createConfigButtons(sheet, element) {
     return input;
   };
 
-  const createImagePickerField = (id, title, src, direction) => {
+  const createSelectGroup = (
+    labelText,
+    inputId,
+    value,
+    choices,
+    onChange,
+  ) => {
+    const fields = createFormGroup(labelText, inputId);
+    const select = document.createElement("select");
+    select.id = inputId;
+    for (const [choiceValue, choiceLabel] of Object.entries(choices)) {
+      const option = document.createElement("option");
+      option.value = choiceValue;
+      option.textContent = choiceLabel;
+      option.selected = choiceValue === value;
+      select.append(option);
+    }
+    select.addEventListener("change", onChange);
+    fields.append(select);
+    return select;
+  };
+
+  const createNumberGroup = (
+    labelText,
+    inputId,
+    value,
+    { min, max, step },
+    onChange,
+  ) => {
+    const fields = createFormGroup(labelText, inputId);
+    const input = document.createElement("input");
+    input.type = "number";
+    input.id = inputId;
+    input.value = String(value);
+    if (min !== undefined) input.min = String(min);
+    if (max !== undefined) input.max = String(max);
+    if (step !== undefined) input.step = String(step);
+    input.addEventListener("change", onChange);
+    fields.append(input);
+    return input;
+  };
+
+  const createImagePickerField = (
+    id,
+    title,
+    src,
+    onBrowse,
+    pickerType = "imagevideo",
+  ) => {
     const wrapper = document.createElement("div");
     wrapper.className = "movement-image-field";
     const inputId = `${id}-path`;
 
     const picker = document.createElement("file-picker");
-    picker.setAttribute("type", "imagevideo");
-    picker.setAttribute("name", `${MODULE_NAME}.${direction}`);
+    picker.setAttribute("type", pickerType);
     picker.setAttribute("value", src);
     picker.id = `${id}-picker`;
 
@@ -348,9 +457,7 @@ export async function createConfigButtons(sheet, element) {
       game.i18n.localize("FILES.BrowseTooltip"),
     );
     browseButton.tabIndex = -1;
-    browseButton.addEventListener("click", async () => {
-      await imageLoader(token.id, sheet, direction);
-    });
+    browseButton.addEventListener("click", onBrowse);
 
     picker.append(input, browseButton);
 
@@ -364,15 +471,27 @@ export async function createConfigButtons(sheet, element) {
     previewImage.src = src;
     previewImage.alt = title;
     previewButton.append(previewImage);
-    previewButton.addEventListener("click", async () => {
-      await imageLoader(token.id, sheet, direction);
-    });
+    previewButton.addEventListener("click", onBrowse);
 
     wrapper.append(picker, previewButton);
     return wrapper;
   };
 
   const uniquePrefix = sheet.options?.uniqueId ?? token.uuid ?? token.id;
+
+  const updateSpriteSheetValue = async (key, value) => {
+    const config = {
+      src: "",
+      facing: "down",
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+      ...getSpriteSheetConfig(token),
+      [key]: value,
+    };
+    await token.setFlag(MODULE_NAME, "spriteSheet", config);
+    sheet.render();
+  };
 
   const addImagePickerGroup = (direction) => {
     createFormGroup(
@@ -383,21 +502,35 @@ export async function createConfigButtons(sheet, element) {
         `${uniquePrefix}-${direction.action}`,
         localize(direction.labelKey),
         images[direction.key],
-        direction.key,
+        async () => {
+          await imageLoader(token.id, sheet, direction.key);
+        },
       ),
     );
   };
 
   if (!hasMovementFlags(token)) {
-    createFormGroup(localize("8BITMOVEMENT.activate_label")).append(
+    const activationFields = createFormGroup(
+      localize("8BITMOVEMENT.activate_label"),
+    );
+    activationFields.append(
       createActionButton(
         "activate",
         localize("8BITMOVEMENT.activate"),
         "far fa-plus-square",
-        "Activate",
+        localize("8BITMOVEMENT.Mode-Separate"),
         async () => {
           await initializeMovement(token.id);
           sheet.render();
+        },
+      ),
+      createActionButton(
+        "activate-sprite-sheet",
+        localize("8BITMOVEMENT.Sprite-Sheet-Activate"),
+        "fas fa-table-cells-large",
+        localize("8BITMOVEMENT.Mode-Sheet"),
+        async () => {
+          await browseSpriteSheet(token, sheet);
         },
       ),
     );
@@ -421,11 +554,129 @@ export async function createConfigButtons(sheet, element) {
     return;
   }
 
-  for (const direction of CARDINAL_DIRECTIONS) addImagePickerGroup(direction);
+  const movementMode = getMovementMode(token);
+  createSelectGroup(
+    localize("8BITMOVEMENT.Mode"),
+    `${uniquePrefix}-movement-mode`,
+    movementMode,
+    {
+      [DIRECTIONAL_IMAGE_MODE]: localize("8BITMOVEMENT.Mode-Separate"),
+      [SPRITE_SHEET_MODE]: localize("8BITMOVEMENT.Mode-Sheet"),
+    },
+    async (event) => {
+      const nextMode = event.currentTarget.value;
+      if (nextMode === SPRITE_SHEET_MODE) {
+        const spriteSheet = {
+          src: "",
+          facing: "down",
+          scale: 1,
+          offsetX: 0,
+          offsetY: 0,
+          ...getSpriteSheetConfig(token),
+        };
+        await token.update({
+          [`flags.${MODULE_NAME}.mode`]: SPRITE_SHEET_MODE,
+          [`flags.${MODULE_NAME}.spriteSheet`]: spriteSheet,
+          [`flags.${MODULE_NAME}.-=__nextTexture`]: null,
+          lockRotation: true,
+        });
+        sheet.render();
+      } else {
+        await token.update({
+          [`flags.${MODULE_NAME}.mode`]: DIRECTIONAL_IMAGE_MODE,
+          [`flags.${MODULE_NAME}.-=__nextTexture`]: null,
+        });
+        sheet.render();
+      }
+    },
+  );
 
-  if (game.settings.get(MODULE_NAME, "diagonalMode")) {
-    for (const direction of DIAGONAL_DIRECTIONS) {
-      addImagePickerGroup(direction);
+  if (movementMode === SPRITE_SHEET_MODE) {
+    const spriteSheet = {
+      src: "",
+      facing: "down",
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+      ...getSpriteSheetConfig(token),
+    };
+    createFormGroup(
+      localize("8BITMOVEMENT.Sprite-Sheet-Image"),
+      `${uniquePrefix}-sprite-sheet-path`,
+    ).append(
+      createImagePickerField(
+        `${uniquePrefix}-sprite-sheet`,
+        localize("8BITMOVEMENT.Sprite-Sheet-Image"),
+        spriteSheet.src,
+        async () => {
+          await browseSpriteSheet(token, sheet);
+        },
+        "image",
+      ),
+    );
+
+    createSelectGroup(
+      localize("8BITMOVEMENT.Sprite-Sheet-Facing"),
+      `${uniquePrefix}-sprite-sheet-facing`,
+      spriteSheet.facing,
+      {
+        up: localize("8BITMOVEMENT.up"),
+        "up-right": localize("8BITMOVEMENT.up-right"),
+        right: localize("8BITMOVEMENT.right"),
+        "down-right": localize("8BITMOVEMENT.down-right"),
+        down: localize("8BITMOVEMENT.down"),
+        "down-left": localize("8BITMOVEMENT.down-left"),
+        left: localize("8BITMOVEMENT.left"),
+        "up-left": localize("8BITMOVEMENT.up-left"),
+      },
+      async (event) => {
+        await updateSpriteSheetValue("facing", event.currentTarget.value);
+      },
+    );
+
+    createNumberGroup(
+      localize("8BITMOVEMENT.Sprite-Sheet-Scale"),
+      `${uniquePrefix}-sprite-sheet-scale`,
+      spriteSheet.scale,
+      { min: 0.1, max: 5, step: 0.05 },
+      async (event) => {
+        await updateSpriteSheetValue(
+          "scale",
+          Math.max(0.1, Number(event.currentTarget.value) || 1),
+        );
+      },
+    );
+    createNumberGroup(
+      localize("8BITMOVEMENT.Sprite-Sheet-Offset-X"),
+      `${uniquePrefix}-sprite-sheet-offset-x`,
+      spriteSheet.offsetX,
+      { step: 1 },
+      async (event) => {
+        await updateSpriteSheetValue(
+          "offsetX",
+          Number(event.currentTarget.value) || 0,
+        );
+      },
+    );
+    createNumberGroup(
+      localize("8BITMOVEMENT.Sprite-Sheet-Offset-Y"),
+      `${uniquePrefix}-sprite-sheet-offset-y`,
+      spriteSheet.offsetY,
+      { step: 1 },
+      async (event) => {
+        await updateSpriteSheetValue(
+          "offsetY",
+          Number(event.currentTarget.value) || 0,
+        );
+      },
+    );
+  } else {
+    for (const direction of CARDINAL_DIRECTIONS) addImagePickerGroup(direction);
+
+    if (game.settings.get(MODULE_NAME, "diagonalMode")) {
+      for (const direction of DIAGONAL_DIRECTIONS) {
+        addImagePickerGroup(direction);
+      }
     }
   }
 
@@ -441,7 +692,12 @@ export async function createConfigButtons(sheet, element) {
           "fa-solid fa-trash",
           localize("8BITMOVEMENT.delete"),
           async () => {
-            await clearPrototypeSettings(token, images.down);
+            await clearPrototypeSettings(
+              token,
+              movementMode === SPRITE_SHEET_MODE
+                ? token.texture.src
+                : images.down,
+            );
             sheet.render();
           },
           "button",

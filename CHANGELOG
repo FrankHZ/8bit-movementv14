@@ -1,5 +1,19 @@
 Change Log for Token Movement 8-bit Style.
 
+1.4.2:
+
+    -Removed the 3x3 text label from the sprite-sheet preview in the Token HUD.
+    -Changing image mode in Token Config no longer opens the file picker automatically.
+
+1.4.1:
+
+    -Added a single-image 3x3 sprite-sheet mode for eight directional facings.
+    -The center cell is unused; top-center faces away and bottom-center faces toward the camera.
+    -Sprite-sheet direction changes are synchronized through Token flags without rewriting texture.src.
+    -Added per-token sprite scale and X/Y offset controls.
+    -Prototype Token saving now preserves diagonal and sprite-sheet configuration.
+    -Aligned settings, flags, and libWrapper registration with the active module ID.
+
 1.0.2:
 
     -Added a mechanic that recognizes the key words UP DOWN LEFT RIGHT (or lowercase) in your file name.

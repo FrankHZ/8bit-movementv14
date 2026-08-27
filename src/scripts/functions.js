@@ -1,5 +1,28 @@
-export const MODULE_NAME = "8bit-movement";
+import {
+  DIRECTIONAL_IMAGE_MODE,
+  MODULE_NAME,
+  SPRITE_SHEET_MODE,
+} from "./constants.js";
+import {
+  applySpriteSheetDirection,
+  getSpriteSheetFacing,
+  isSpriteSheetMode,
+} from "./sprite-sheet.js";
+
+export { MODULE_NAME };
+
 const __8bitPersistTimers = new Map();
+
+const IMAGE_FLAG_BY_DIRECTION = Object.freeze({
+  up: "up",
+  down: "down",
+  left: "left",
+  right: "right",
+  "up-left": "UL",
+  "up-right": "UR",
+  "down-left": "DL",
+  "down-right": "DR",
+});
 
 function __8bit_forceOpaque(placeable) {
   try {
@@ -145,7 +168,44 @@ export async function initializeMovement(tokenId) {
     }
   }
 
-  await token.document.update({ lockRotation: true, rotation: 1 });
+  await token.document.update({
+    [`flags.${MODULE_NAME}.mode`]: DIRECTIONAL_IMAGE_MODE,
+    [`flags.${MODULE_NAME}.-=spriteSheet`]: null,
+    lockRotation: true,
+    rotation: 1,
+  });
+}
+
+/**
+ * Configure a token to use a fixed 3x3, eight-direction sprite sheet.
+ * @param {string} tokenId Token ID to configure.
+ * @param {string} src Sprite sheet image path.
+ */
+export async function initializeSpriteSheet(tokenId, src) {
+  const token = canvas.tokens.get(tokenId);
+  const image = String(src ?? "").trim();
+  if (!token || !image) return;
+
+  const current = token.document.getFlag(MODULE_NAME, "spriteSheet") ?? {};
+  const spriteSheet = {
+    src: image,
+    facing: current.facing || "down",
+    scale: Number.isFinite(Number(current.scale)) ? Number(current.scale) : 1,
+    offsetX: Number.isFinite(Number(current.offsetX))
+      ? Number(current.offsetX)
+      : 0,
+    offsetY: Number.isFinite(Number(current.offsetY))
+      ? Number(current.offsetY)
+      : 0,
+  };
+
+  await token.document.update({
+    [`flags.${MODULE_NAME}.mode`]: SPRITE_SHEET_MODE,
+    [`flags.${MODULE_NAME}.spriteSheet`]: spriteSheet,
+    [`flags.${MODULE_NAME}.-=__nextTexture`]: null,
+    lockRotation: true,
+  });
+  await applySpriteSheetDirection(token, spriteSheet.facing);
 }
 
 /**
@@ -166,12 +226,78 @@ export async function imageLoader(tokenId, sheet, direction) {
   pickedFile.browse();
 }
 
+function movementDirection(token, change, eightWay) {
+  const nextX = foundry.utils.hasProperty(change, "x") ? change.x : token.x;
+  const nextY = foundry.utils.hasProperty(change, "y") ? change.y : token.y;
+  const dx = nextX - token.x;
+  const dy = nextY - token.y;
+  if (dx === 0 && dy === 0) return "";
+
+  if (eightWay && dx !== 0 && dy !== 0) {
+    if (dx < 0 && dy < 0) return "up-left";
+    if (dx > 0 && dy < 0) return "up-right";
+    if (dx < 0 && dy > 0) return "down-left";
+    return "down-right";
+  }
+
+  if (dy < 0) return "up";
+  if (dy > 0) return "down";
+  return dx < 0 ? "left" : "right";
+}
+
+function rotationDirection(rotation, eightWay) {
+  const normalized = ((Number(rotation) % 360) + 360) % 360;
+  if (eightWay) {
+    const directions = [
+      "down",
+      "down-left",
+      "left",
+      "up-left",
+      "up",
+      "up-right",
+      "right",
+      "down-right",
+    ];
+    return directions[Math.round(normalized / 45) % directions.length];
+  }
+
+  const directions = ["down", "left", "up", "right"];
+  return directions[Math.round(normalized / 90) % directions.length];
+}
+
+function setSpriteSheetFacing(token, change, direction) {
+  if (!direction || direction === getSpriteSheetFacing(token)) {
+    void applySpriteSheetDirection(canvas?.tokens?.get(token.id), direction);
+    return;
+  }
+  foundry.utils.setProperty(
+    change,
+    `flags.${MODULE_NAME}.spriteSheet.facing`,
+    direction,
+  );
+  void applySpriteSheetDirection(canvas?.tokens?.get(token.id), direction);
+}
+
+function setDirectionalTexture(token, change, direction) {
+  const flag = IMAGE_FLAG_BY_DIRECTION[direction];
+  const src = flag ? token.getFlag(MODULE_NAME, flag) : null;
+  if (!src || token.texture.src === src) return;
+
+  foundry.utils.setProperty(
+    change,
+    `flags.${MODULE_NAME}.__nextTexture`,
+    src,
+  );
+  __8bit_previewMesh(token.id, src);
+}
+
 /**
  * Register token update listeners that preview and persist directional textures.
  */
 export async function addListener() {
   Hooks.on("refreshToken", (pl) => {
     try {
+      if (isSpriteSheetMode(pl)) return;
       const next = pl?.document?.getFlag(MODULE_NAME, "__nextTexture");
       if (next) __8bit_previewMesh(pl.id, next);
     } catch {}
@@ -179,7 +305,9 @@ export async function addListener() {
   const diagonalMode = game.settings.get(MODULE_NAME, "diagonalMode");
   Hooks.on("preUpdateToken", function changeImage(token, change) {
     if (!token.flags[MODULE_NAME]) return;
+    const spriteSheetMode = isSpriteSheetMode(token);
     if (
+      !spriteSheetMode &&
       !token.getFlag(MODULE_NAME, "up") &&
       !token.getFlag(MODULE_NAME, "down") &&
       !token.getFlag(MODULE_NAME, "right") &&
@@ -196,8 +324,7 @@ export async function addListener() {
       foundry.utils.hasProperty(change, "y");
     const rotation = foundry.utils.hasProperty(change, "rotation");
     if (move) {
-      let direction = "";
-      if (diagonalMode) {
+      if (!spriteSheetMode && diagonalMode) {
         if (
           !token.getFlag(MODULE_NAME, "UL") &&
           !token.getFlag(MODULE_NAME, "UR") &&
@@ -210,134 +337,19 @@ export async function addListener() {
             );
           return;
         }
-        if (token.x === change.x && token.y === change.y) return;
-        if (token.x > change.x && token.y === change.y) direction = "left";
-        if (token.x < change.x && token.y === change.y) direction = "right";
-        if (token.y > change.y && token.x === change.x) direction = "up";
-        if (token.y < change.y && token.x === change.x) direction = "down";
-        if (token.x > change.x && token.y > change.y) direction = "up-left";
-        if (token.x < change.x && token.y > change.y) direction = "up-right";
-        if (token.x > change.x && token.y < change.y) direction = "down-left";
-        if (token.x < change.x && token.y < change.y) direction = "down-right";
-      } else {
-        if (token.x > change.x) direction = "left";
-        if (token.x < change.x) direction = "right";
-        if (token.y > change.y) direction = "up";
-        if (token.y < change.y) direction = "down";
       }
-      if (direction === "up") {
-        if (token.texture.src === token.flags[MODULE_NAME].up) return;
-        foundry.utils.setProperty(
-          change,
-          "flags.8bit-movement.__nextTexture",
-          token.flags[MODULE_NAME].up,
-        );
-        __8bit_previewMesh(token.id, token.flags[MODULE_NAME].up);
-      }
-      if (direction === "down") {
-        if (token.texture.src === token.flags[MODULE_NAME].down) return;
-        foundry.utils.setProperty(
-          change,
-          "flags.8bit-movement.__nextTexture",
-          token.flags[MODULE_NAME].down,
-        );
-        __8bit_previewMesh(token.id, token.flags[MODULE_NAME].down);
-      }
-      if (direction === "left") {
-        if (token.texture.src === token.flags[MODULE_NAME].left) return;
-        foundry.utils.setProperty(
-          change,
-          "flags.8bit-movement.__nextTexture",
-          token.flags[MODULE_NAME].left,
-        );
-        __8bit_previewMesh(token.id, token.flags[MODULE_NAME].left);
-      }
-      if (direction === "right") {
-        if (token.texture.src === token.flags[MODULE_NAME].right) return;
-        foundry.utils.setProperty(
-          change,
-          "flags.8bit-movement.__nextTexture",
-          token.flags[MODULE_NAME].right,
-        );
-        __8bit_previewMesh(token.id, token.flags[MODULE_NAME].right);
-      }
-      if (direction === "up-left") {
-        if (token.texture.src === token.flags[MODULE_NAME].UL) return;
-        foundry.utils.setProperty(
-          change,
-          "flags.8bit-movement.__nextTexture",
-          token.flags[MODULE_NAME].UL,
-        );
-        __8bit_previewMesh(token.id, token.flags[MODULE_NAME].UL);
-      }
-      if (direction === "up-right") {
-        if (token.texture.src === token.flags[MODULE_NAME].UR) return;
-        foundry.utils.setProperty(
-          change,
-          "flags.8bit-movement.__nextTexture",
-          token.flags[MODULE_NAME].UR,
-        );
-        __8bit_previewMesh(token.id, token.flags[MODULE_NAME].UR);
-      }
-      if (direction === "down-left") {
-        if (token.texture.src === token.flags[MODULE_NAME].DL) return;
-        foundry.utils.setProperty(
-          change,
-          "flags.8bit-movement.__nextTexture",
-          token.flags[MODULE_NAME].DL,
-        );
-        __8bit_previewMesh(token.id, token.flags[MODULE_NAME].DL);
-      }
-      if (direction === "down-right") {
-        if (token.texture.src === token.flags[MODULE_NAME].DR) return;
-        foundry.utils.setProperty(
-          change,
-          "flags.8bit-movement.__nextTexture",
-          token.flags[MODULE_NAME].DR,
-        );
-        __8bit_previewMesh(token.id, token.flags[MODULE_NAME].DR);
-      }
+
+      const direction = movementDirection(
+        token,
+        change,
+        spriteSheetMode || diagonalMode,
+      );
+      if (spriteSheetMode) setSpriteSheetFacing(token, change, direction);
+      else setDirectionalTexture(token, change, direction);
     } else if (rotation) {
-      switch (foundry.utils.getProperty(change, "rotation")) {
-        case 0:
-          if (token.texture.src === token.flags[MODULE_NAME].down) return;
-          foundry.utils.setProperty(
-            change,
-            "flags.8bit-movement.__nextTexture",
-            token.flags[MODULE_NAME].down,
-          );
-          __8bit_previewMesh(token.id, token.flags[MODULE_NAME].down);
-          break;
-        case 90:
-          if (token.texture.src === token.flags[MODULE_NAME].left) return;
-          foundry.utils.setProperty(
-            change,
-            "flags.8bit-movement.__nextTexture",
-            token.flags[MODULE_NAME].left,
-          );
-          __8bit_previewMesh(token.id, token.flags[MODULE_NAME].left);
-          break;
-        case 180:
-          if (token.texture.src === token.flags[MODULE_NAME].up) return;
-          foundry.utils.setProperty(
-            change,
-            "flags.8bit-movement.__nextTexture",
-            token.flags[MODULE_NAME].up,
-          );
-          __8bit_previewMesh(token.id, token.flags[MODULE_NAME].up);
-          break;
-        case 270:
-          if (token.texture.src === token.flags[MODULE_NAME].right) return;
-          foundry.utils.setProperty(
-            change,
-            "flags.8bit-movement.__nextTexture",
-            token.flags[MODULE_NAME].right,
-          );
-          __8bit_previewMesh(token.id, token.flags[MODULE_NAME].right);
-          break;
-        default:
-          break;
-      }
+      const direction = rotationDirection(change.rotation, spriteSheetMode);
+      if (spriteSheetMode) setSpriteSheetFacing(token, change, direction);
+      else setDirectionalTexture(token, change, direction);
     }
   });
 }
@@ -347,13 +359,14 @@ Hooks.on("updateToken", async (doc, changes) => {
   try {
     const token = canvas?.tokens?.get(doc.id);
     if (!token) return;
+    if (isSpriteSheetMode(doc)) return;
 
     // Transient flag set by preUpdateToken.
     const next =
       (changes?.flags &&
-        changes.flags["8bit-movement"] &&
-        changes.flags["8bit-movement"].__nextTexture) ||
-      doc.getFlag("8bit-movement", "__nextTexture");
+        changes.flags[MODULE_NAME] &&
+        changes.flags[MODULE_NAME].__nextTexture) ||
+      doc.getFlag(MODULE_NAME, "__nextTexture");
 
     // Debounce persistence until movement settles to avoid jumps on drawn paths.
     if (next || "x" in changes || "y" in changes) {
@@ -361,12 +374,12 @@ Hooks.on("updateToken", async (doc, changes) => {
       if (prev) clearTimeout(prev);
       const handle = setTimeout(async () => {
         try {
-          const pending = doc.getFlag("8bit-movement", "__nextTexture");
+          const pending = doc.getFlag(MODULE_NAME, "__nextTexture");
           if (pending) {
             await doc.update(
               {
                 "texture.src": pending,
-                "flags.8bit-movement.-=__nextTexture": null,
+                [`flags.${MODULE_NAME}.-=__nextTexture`]: null,
               },
               { animate: false },
             );

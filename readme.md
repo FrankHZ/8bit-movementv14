@@ -10,6 +10,7 @@ This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It h
 - Configure the same images from Token Config
 - Auto-detect direction suffixes in filenames during setup
 - Optional diagonal support using `UL`, `UR`, `DL`, and `DR` from either setup UI
+- Single-image 3x3 sprite-sheet mode with eight directional cells
 - Save directional settings back to the actor's prototype token
 - Optional warning controls
 - Optional rotation animation override when `libWrapper` is active
@@ -31,6 +32,25 @@ Examples:
 
 Lowercase suffixes also work.
 
+## Single 3x3 sprite sheets
+
+Sprite-sheet mode reads eight facings from one image without playing a walk
+animation. The center cell is unused. The sheet layout is:
+
+| | | |
+| --- | --- | --- |
+| Up Left | Up | Up Right |
+| Left | Unused | Right |
+| Down Left | Down | Down Right |
+
+The top-center cell faces away from the camera and the bottom-center cell faces
+toward the camera. For the cleanest cropping, use an image whose width and
+height are divisible by three. Transparent PNG or WebP files are recommended.
+
+Sprite-sheet mode is always eight-directional and does not depend on the global
+Diagonal mode setting. It stores only the current facing in the Token flags;
+the Token document's texture path is not rewritten on each move.
+
 ## Setup
 
 Enable the module in a world, then configure the module settings from Foundry's Configure Settings dialog.
@@ -38,6 +58,8 @@ Enable the module in a world, then configure the module settings from Foundry's 
 - **Token HUD mode** adds movement image buttons to the token HUD.
 - **Token Settings mode** adds the same movement image controls to the Token Config appearance tab.
 - **Diagonal mode** enables four extra diagonal image slots.
+- **Single 3x3 sprite sheet** can be selected as an alternative to separate
+  direction images from the Token HUD or Token Config.
 - **Only allow GM changes** restricts setup controls to GMs.
 - **Disable Rotation Animation** registers a `libWrapper` wrapper that suppresses Foundry's rotation animation during combined texture/rotation updates.
 

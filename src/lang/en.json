@@ -27,5 +27,14 @@
   "8BITMOVEMENT.Settings-Warn_name": "Disable Warning Notification: ",
   "8BITMOVEMENT.Settings-Warn_hint": "When ticked the warning notification for missing images will be disabled.",
   "8BITMOVEMENT.Disable-Rotation-Animation_name": "Disable Rotation Animation: ",
-  "8BITMOVEMENT.Disable-Rotation-Animation_hint": "When ticked the rotation animation will be disabled."
+  "8BITMOVEMENT.Disable-Rotation-Animation_hint": "When ticked the rotation animation will be disabled.",
+  "8BITMOVEMENT.Mode": "Image mode",
+  "8BITMOVEMENT.Mode-Separate": "Separate direction images",
+  "8BITMOVEMENT.Mode-Sheet": "Single 3x3 sprite sheet",
+  "8BITMOVEMENT.Sprite-Sheet-Activate": "Activate a single 3x3, eight-direction sprite sheet.",
+  "8BITMOVEMENT.Sprite-Sheet-Image": "3x3 sprite sheet",
+  "8BITMOVEMENT.Sprite-Sheet-Facing": "Default facing",
+  "8BITMOVEMENT.Sprite-Sheet-Scale": "Sprite scale",
+  "8BITMOVEMENT.Sprite-Sheet-Offset-X": "Horizontal offset (px)",
+  "8BITMOVEMENT.Sprite-Sheet-Offset-Y": "Vertical offset (px)"
 }
