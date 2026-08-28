@@ -6,7 +6,7 @@ Change Log for Token Movement 8-bit Style.
     -Added dependency-free Node tests for sprite-sheet defaults, direction fallbacks, row mapping, crop offsets, bounds errors, frame rectangles, and facade exports.
     -Added a lightweight check command for JavaScript syntax, JSON parsing, manifest/package version alignment, and unit tests.
     -Documented the current architecture and ranked future refactor candidates without adding a bundler, TypeScript, or a Foundry mock environment.
-    -Added Simplified Chinese localization using Foundry's established `cn` language code, with automated locale-key parity checks.
+    -Added Simplified Chinese localization using Foundry's established `cn` language code, with an automated test for locale keys, values, and placeholders.
 
 1.5.1:
 

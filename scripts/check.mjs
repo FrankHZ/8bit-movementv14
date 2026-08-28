@@ -41,9 +41,8 @@ const packageMetadata = JSON.parse(await readFile(packagePath, "utf8"));
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 const languageRoot = join(repositoryRoot, "src", "lang");
 const languageFiles = await findFiles(languageRoot, ".json");
-const languages = new Map();
 for (const languageFile of languageFiles) {
-  languages.set(languageFile, JSON.parse(await readFile(languageFile, "utf8")));
+  JSON.parse(await readFile(languageFile, "utf8"));
 }
 
 assert.equal(
@@ -51,34 +50,6 @@ assert.equal(
   manifest.version,
   "package.json and module.json versions must match",
 );
-
-const englishPath = join(languageRoot, "en.json");
-const englishTranslations = languages.get(englishPath);
-const englishKeys = Object.keys(englishTranslations).sort();
-for (const [languageFile, translations] of languages) {
-  assert.deepEqual(
-    Object.keys(translations).sort(),
-    englishKeys,
-    `${languageFile} must contain exactly the same keys as en.json`,
-  );
-  for (const key of englishKeys) {
-    const expectedPlaceholders = [
-      ...String(englishTranslations[key]).matchAll(/\{[^{}]+\}/g),
-    ]
-      .map(([placeholder]) => placeholder)
-      .sort();
-    const actualPlaceholders = [
-      ...String(translations[key]).matchAll(/\{[^{}]+\}/g),
-    ]
-      .map(([placeholder]) => placeholder)
-      .sort();
-    assert.deepEqual(
-      actualPlaceholders,
-      expectedPlaceholders,
-      `${languageFile} must preserve placeholders for ${key}`,
-    );
-  }
-}
 
 for (const language of manifest.languages ?? []) {
   assert.match(language.lang, /^[a-z-]+$/, `Invalid language code: ${language.lang}`);
