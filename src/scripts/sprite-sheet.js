@@ -5,31 +5,69 @@ import {
 } from "./constants.js";
 
 export const DEFAULT_RPGM_FRAME_SIZE = 48;
+export const SPRITE_SHEET_DEFAULT_FRAME_WIDTH_SETTING =
+  "spriteSheetDefaultFrameWidth";
+export const SPRITE_SHEET_DEFAULT_FRAME_HEIGHT_SETTING =
+  "spriteSheetDefaultFrameHeight";
+export const SPRITE_SHEET_DEFAULT_ROW_SETTINGS = Object.freeze({
+  down: "spriteSheetDefaultRowDown",
+  left: "spriteSheetDefaultRowLeft",
+  right: "spriteSheetDefaultRowRight",
+  up: "spriteSheetDefaultRowUp",
+  "down-left": "spriteSheetDefaultRowDownLeft",
+  "down-right": "spriteSheetDefaultRowDownRight",
+  "up-left": "spriteSheetDefaultRowUpLeft",
+  "up-right": "spriteSheetDefaultRowUpRight",
+});
 export const CARDINAL_SPRITE_DIRECTIONS = Object.freeze([
-  { key: "down", defaultRow: 1, labelKey: "8BITMOVEMENT.down" },
-  { key: "left", defaultRow: 2, labelKey: "8BITMOVEMENT.left" },
-  { key: "right", defaultRow: 3, labelKey: "8BITMOVEMENT.right" },
-  { key: "up", defaultRow: 4, labelKey: "8BITMOVEMENT.up" },
+  {
+    key: "down",
+    defaultRow: 1,
+    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS.down,
+    labelKey: "8BITMOVEMENT.down",
+  },
+  {
+    key: "left",
+    defaultRow: 2,
+    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS.left,
+    labelKey: "8BITMOVEMENT.left",
+  },
+  {
+    key: "right",
+    defaultRow: 3,
+    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS.right,
+    labelKey: "8BITMOVEMENT.right",
+  },
+  {
+    key: "up",
+    defaultRow: 4,
+    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS.up,
+    labelKey: "8BITMOVEMENT.up",
+  },
 ]);
 export const DIAGONAL_SPRITE_DIRECTIONS = Object.freeze([
   {
     key: "down-left",
     defaultRow: 1,
+    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS["down-left"],
     labelKey: "8BITMOVEMENT.down-left",
   },
   {
     key: "down-right",
     defaultRow: 1,
+    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS["down-right"],
     labelKey: "8BITMOVEMENT.down-right",
   },
   {
     key: "up-left",
     defaultRow: 4,
+    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS["up-left"],
     labelKey: "8BITMOVEMENT.up-left",
   },
   {
     key: "up-right",
     defaultRow: 4,
+    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS["up-right"],
     labelKey: "8BITMOVEMENT.up-right",
   },
 ]);
@@ -72,6 +110,15 @@ function nonNegativeInteger(value) {
   return Number.isInteger(number) && number >= 0 ? number : null;
 }
 
+function positiveSetting(setting, fallback) {
+  try {
+    if (typeof game === "undefined" || !game.settings) return fallback;
+    return positiveInteger(game.settings.get(MODULE_NAME, setting)) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function directionKeys(directions) {
   return directions.map((direction) =>
     typeof direction === "string" ? direction : direction.key,
@@ -100,15 +147,26 @@ export function withSpriteSheetDefaults(config = {}) {
   const directionRows = Object.fromEntries(
     SPRITE_SHEET_DIRECTIONS.map((direction) => [
       direction.key,
-      configuredRows[direction.key] ?? direction.defaultRow,
+      configuredRows[direction.key] ??
+        positiveSetting(direction.defaultRowSetting, direction.defaultRow),
     ]),
   );
 
   return {
     src: String(config.src ?? "").trim(),
     facing: normalizeSpriteSheetDirection(config.facing),
-    frameWidth: config.frameWidth ?? DEFAULT_RPGM_FRAME_SIZE,
-    frameHeight: config.frameHeight ?? DEFAULT_RPGM_FRAME_SIZE,
+    frameWidth:
+      config.frameWidth ??
+      positiveSetting(
+        SPRITE_SHEET_DEFAULT_FRAME_WIDTH_SETTING,
+        DEFAULT_RPGM_FRAME_SIZE,
+      ),
+    frameHeight:
+      config.frameHeight ??
+      positiveSetting(
+        SPRITE_SHEET_DEFAULT_FRAME_HEIGHT_SETTING,
+        DEFAULT_RPGM_FRAME_SIZE,
+      ),
     sourceOffsetX: config.sourceOffsetX ?? 0,
     sourceOffsetY: config.sourceOffsetY ?? 0,
     directionRows,

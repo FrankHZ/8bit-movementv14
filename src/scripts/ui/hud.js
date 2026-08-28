@@ -227,6 +227,8 @@ function appendSpriteSheetPreview(
   const preview = createSpriteSheetPreview({
     compact: true,
     diagonal: diagonalMode,
+    errorsOnly: true,
+    showLabels: false,
     onActivate: locked
       ? undefined
       : async () => {

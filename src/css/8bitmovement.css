@@ -298,6 +298,11 @@ button.movement-direction-preview:focus-visible {
     box-shadow: none;
 }
 
+button.movement-direction-preview {
+    height: auto;
+    min-height: 0;
+}
+
 .movement-direction-preview > span {
     overflow: hidden;
     max-width: 100%;
@@ -307,6 +312,7 @@ button.movement-direction-preview:focus-visible {
 
 .movement-frame-viewport {
     position: relative;
+    flex: 0 0 auto;
     width: 54px;
     overflow: hidden;
     background:
@@ -315,6 +321,14 @@ button.movement-direction-preview:focus-visible {
         linear-gradient(45deg, transparent 75%, rgb(127 127 127 / 10%) 75%) 4px -4px / 8px 8px,
         linear-gradient(45deg, rgb(127 127 127 / 10%) 25%, transparent 25%) 4px 4px / 8px 8px;
     border-radius: 3px;
+}
+
+.movement-sprite-status[hidden] {
+    display: none;
+}
+
+.movement-sprite-status[hidden] + .movement-direction-preview-grid {
+    margin-top: 0;
 }
 
 .movement-frame-viewport img {
