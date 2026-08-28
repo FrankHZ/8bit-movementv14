@@ -24,18 +24,19 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - Avoid raw `innerHTML` for image paths or user-controlled values in UI code.
 - Four/eight-direction mode is a per-Token flag. The hidden world setting exists only as a compatibility fallback for older Tokens.
 - Sprite-sheet source crop offsets are distinct from Token display offsets. Source rows are one-based and may be shared by multiple directions.
+- World settings provide sprite-sheet frame and direction-row defaults only for missing Token fields. Explicit values already saved in Token flags must always take priority.
 - Token Config field edits should use `{ render: false }`; rebuild only the module fieldset when its structure changes.
 - Do not commit generated zip files unless the task is explicitly about packaging a release.
 
 ## Versioning and Local Release
 
-- The current development release is `1.5.0`.
-- The v1.5.0 manifest uses Foundry `minimum: 13` and `verified: 13.351`; v14 support is intended but not presently verified.
+- The current development release is `1.5.1`.
+- The v1.5.1 manifest uses Foundry `minimum: 13` and `verified: 13.351`; v14 support is intended but not presently verified.
 - Keep `package.json` and `src/module.json` versions identical.
-- Record this development cycle under one `1.5.0` CHANGELOG entry; avoid interim local patch-version entries.
-- `src/` is canonical. The unpacked `release/8bit-movement-frankhz/` directory and versioned zip are generated local test artifacts.
+- Record this patch cycle under the `1.5.1` CHANGELOG entry.
+- `src/` is canonical. Run `npm run release:package` to generate the unpacked module, the version-free manual-install zip, and the versioned release zip under `release/`.
 - Local packaging or linking does not authorize pushing tags, publishing a GitHub release, or calling Foundry's release API.
-- GitHub release manifests must point `download` at the packaged module zip asset, not GitHub's source-branch archive.
+- Prefer a fixed packaged module asset over GitHub's mutable source-branch archive for release `download` URLs. Foundry can locate a nested manifest, but a version-specific asset is easier to reproduce and roll back.
 
 ## Useful Checks
 

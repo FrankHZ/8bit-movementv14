@@ -2,7 +2,7 @@
 
 `8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
-This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It has been locally tested on Foundry VTT v13.351; the v1.5.0 manifest is verified for `13.351`, while v14 remains an intended but currently unverified target.
+This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It has been locally tested on Foundry VTT v13.351; the v1.5.1 manifest is verified for `13.351`, while v14 remains an intended but currently unverified target.
 
 ## Features
 
@@ -50,6 +50,12 @@ in Token Config. Then assign a one-based source row to each active direction.
 Rows may be reused, so a missing diagonal can point to the same row as Up or
 Down. Enabling eight directions exposes four additional row assignments.
 
+World-level module settings provide the initial frame width, frame height, and
+source row for each of the eight directions. These defaults are copied into new
+sprite-sheet configurations; changing them does not overwrite values already
+saved on existing Tokens. The built-in fallback remains 48×48 with the standard
+four-row RPG Maker mapping.
+
 The texture does not need to be evenly divisible by the frame size. Validation
 only requires positive frame sizes and row numbers, non-negative crop offsets,
 and enough texture bounds to contain every configured first-frame crop. The
@@ -64,8 +70,14 @@ Enable the module in a world, then configure the module settings from Foundry's 
 For manual installation, use this manifest URL:
 
 ```text
-https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.0/src/module.json
+https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.1/src/module.json
 ```
+
+When installing a downloaded ZIP manually, the final directory must be named
+`Data/modules/8bit-movement-frankhz/`, with `module.json` directly inside it.
+The version-free `8bit-movement-frankhz.zip` is intended for Windows' default
+Extract All workflow; a versioned ZIP may otherwise create a mismatched folder
+name that Foundry will not recognize.
 
 - **Token HUD mode** adds movement image controls to the token HUD. Its panel
   can be collapsed to a compact title bar and reopened with the visibility toggle.
@@ -99,7 +111,16 @@ Runtime behavior still needs to be checked in Foundry itself, especially Token H
 
 ## Release helper
 
-This repo includes a small helper for Foundry's Package Release API.
+Build both the manual-install ZIP and a versioned archive from `src/`:
+
+```powershell
+npm run release:package
+```
+
+The generated files are placed in `release/`. The version-free ZIP is convenient
+for manual extraction, while the versioned ZIP is retained as a release archive.
+
+This repo also includes a small helper for Foundry's Package Release API.
 
 1. Copy `.env.example` to `.env.local` or set `FOUNDRY_RELEASE_TOKEN` in your shell.
 2. Get the token from the package edit page on foundryvtt.com.
@@ -122,7 +143,7 @@ This repo includes a small helper for Foundry's Package Release API.
    npm run release:publish
    ```
 
-Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.0`. The API payload uses that tag for the version-specific manifest URL.
+Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.1`. The API payload uses that tag for the version-specific manifest URL.
 
 ## Credits
 

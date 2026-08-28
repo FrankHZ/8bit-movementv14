@@ -1,10 +1,12 @@
 {
   "name": "8bit-movement",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Directional token images and row-mapped RPG Maker sprite sheets for Foundry VTT v13 and v14.",
   "main": "main.js",
   "type": "module",
   "scripts": {
+    "build": "pwsh -NoLogo -NoProfile -NonInteractive -File scripts/package-release.ps1",
+    "release:package": "pwsh -NoLogo -NoProfile -NonInteractive -File scripts/package-release.ps1",
     "release:payload": "node scripts/release-foundry.mjs --payload-only",
     "release:dry-run": "node scripts/release-foundry.mjs",
     "release:publish": "node scripts/release-foundry.mjs --publish",

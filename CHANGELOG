@@ -1,5 +1,14 @@
 Change Log for Token Movement 8-bit Style.
 
+1.5.1:
+
+    -Added world-level sprite-sheet defaults for frame width, frame height, and all eight direction rows without overwriting existing Token configurations.
+    -Limited default direction-row settings to rows 1-16 and added safe English fallbacks when newly added localization keys are unavailable.
+    -Simplified sprite-sheet previews in the Token HUD by removing direction labels and non-error status text, and fixed unlocked preview-card aspect ratios.
+    -Added a transparent 3x8 directional sprite-sheet test asset with three frames per direction.
+    -Added a local release packaging script that produces both a version-free manual-install ZIP and a versioned archive from src/.
+    -Changed the release download to a version-free ZIP filename so Windows manual extraction creates the correct module directory name.
+
 1.5.0:
 
     -Published a Foundry-installable GitHub release package, pinned the manifest/download URLs to v1.5.0, and set Foundry verification to 13.351.

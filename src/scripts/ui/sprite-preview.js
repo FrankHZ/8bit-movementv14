@@ -47,11 +47,13 @@ function getValidationMessage(result) {
   }
 }
 
-function createDirectionPreview(direction, onActivate) {
+function createDirectionPreview(direction, onActivate, showLabel) {
   const card = document.createElement(onActivate ? "button" : "div");
   if (onActivate) card.type = "button";
   card.className = `movement-direction-preview movement-direction-${direction.key}`;
   card.dataset.direction = direction.key;
+  card.title = localize(direction.labelKey);
+  if (onActivate) card.setAttribute("aria-label", card.title);
 
   const viewport = document.createElement("div");
   viewport.className = "movement-frame-viewport";
@@ -59,9 +61,12 @@ function createDirectionPreview(direction, onActivate) {
   image.alt = localize(direction.labelKey);
   viewport.append(image);
 
-  const label = document.createElement("span");
-  label.textContent = localize(direction.labelKey);
-  card.append(viewport, label);
+  card.append(viewport);
+  if (showLabel) {
+    const label = document.createElement("span");
+    label.textContent = localize(direction.labelKey);
+    card.append(label);
+  }
   if (onActivate) card.addEventListener("click", onActivate);
   return { card, image, direction };
 }
@@ -84,6 +89,8 @@ function applyFramePreview(preview, result) {
 export function createSpriteSheetPreview({
   compact = false,
   diagonal = false,
+  errorsOnly = false,
+  showLabels = true,
   onActivate,
 } = {}) {
   const directions = getSpriteSheetDirections(diagonal);
@@ -101,7 +108,7 @@ export function createSpriteSheetPreview({
   grid.className = "movement-direction-preview-grid";
   grid.hidden = true;
   const previews = directions.map((direction) =>
-    createDirectionPreview(direction, onActivate),
+    createDirectionPreview(direction, onActivate, showLabels),
   );
   grid.append(...previews.map(({ card }) => card));
   element.append(status, grid);
@@ -110,6 +117,7 @@ export function createSpriteSheetPreview({
   const update = async (config) => {
     const currentRequest = ++requestId;
     element.dataset.state = "loading";
+    status.hidden = errorsOnly;
     statusIcon.className = "fas fa-spinner fa-spin";
     statusText.textContent = localize(
       "8BITMOVEMENT.Sprite-Sheet-Validation-Loading",
@@ -120,6 +128,7 @@ export function createSpriteSheetPreview({
     if (currentRequest !== requestId) return result;
 
     element.dataset.state = result.valid ? "valid" : "invalid";
+    status.hidden = errorsOnly && result.valid;
     statusIcon.className = result.valid
       ? "fas fa-circle-check"
       : "fas fa-triangle-exclamation";

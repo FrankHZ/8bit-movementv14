@@ -8,7 +8,7 @@
       "name": "FrankHZ"
     }
   ],
-  "version": "1.5.0",
+  "version": "1.5.1",
   "compatibility": {
     "minimum": "13",
     "verified": "13.351"
@@ -23,9 +23,9 @@
       "path": "lang/en.json"
     }
   ],
-  "manifest": "https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.0/src/module.json",
+  "manifest": "https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.1/src/module.json",
   "url": "https://github.com/FrankHZ/8bit-movementv14",
-  "download": "https://github.com/FrankHZ/8bit-movementv14/releases/download/v1.5.0/8bit-movement-frankhz-1.5.0.zip",
+  "download": "https://github.com/FrankHZ/8bit-movementv14/releases/download/v1.5.1/8bit-movement-frankhz.zip",
   "protected": false,
   "coreTranslation": false,
   "library": false,
