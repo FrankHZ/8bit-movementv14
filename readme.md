@@ -2,7 +2,7 @@
 
 `8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
-This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It has been locally tested on Foundry VTT v13.351 and targets compatibility through v14.360.
+This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It has been locally tested on Foundry VTT v13.351; the v1.5.0 manifest is verified for `13.351`, while v14 remains an intended but currently unverified target.
 
 ## Features
 
@@ -61,6 +61,12 @@ Token document's texture path is not rewritten on each move.
 
 Enable the module in a world, then configure the module settings from Foundry's Configure Settings dialog.
 
+For manual installation, use this manifest URL:
+
+```text
+https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.0/src/module.json
+```
+
 - **Token HUD mode** adds movement image controls to the token HUD. Its panel
   can be collapsed to a compact title bar and reopened with the visibility toggle.
 - **Token Settings mode** adds the same movement image controls to the Token Config appearance tab.
@@ -75,10 +81,10 @@ To initialize a token, select it and click the activate button from the Token HU
 
 ## Current status
 
-- Targeted at Foundry VTT `13` through `14.360`
+- Manifest minimum and verified versions are Foundry VTT `13` and `13.351`
 - Updated from earlier v10-v13 forks
 - Locally tested on Foundry VTT `13.351`
-- Still needs more real-world testing on Foundry v14 before calling it fully stable
+- Foundry v14 compatibility remains intended but needs real-world verification
 
 ## Development notes
 

@@ -30,10 +30,12 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 ## Versioning and Local Release
 
 - The current development release is `1.5.0`.
+- The v1.5.0 manifest uses Foundry `minimum: 13` and `verified: 13.351`; v14 support is intended but not presently verified.
 - Keep `package.json` and `src/module.json` versions identical.
 - Record this development cycle under one `1.5.0` CHANGELOG entry; avoid interim local patch-version entries.
 - `src/` is canonical. The unpacked `release/8bit-movement-frankhz/` directory and versioned zip are generated local test artifacts.
 - Local packaging or linking does not authorize pushing tags, publishing a GitHub release, or calling Foundry's release API.
+- GitHub release manifests must point `download` at the packaged module zip asset, not GitHub's source-branch archive.
 
 ## Useful Checks
 

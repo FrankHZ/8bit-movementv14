@@ -2,6 +2,7 @@ Change Log for Token Movement 8-bit Style.
 
 1.5.0:
 
+    -Published a Foundry-installable GitHub release package, pinned the manifest/download URLs to v1.5.0, and set Foundry verification to 13.351.
     -Replaced the fixed 3x3 sheet layout with a row-mapped RPG Maker layout that uses the first animation frame for each direction.
     -Added user-configurable frame size, source crop offsets, per-direction source rows, bounds validation, and cropped direction previews to Token Config. Multiple directions may share one source row.
     -Changed diagonal mode from a world setting to a per-Token four/eight-direction toggle shared by separate-image and sprite-sheet modes; the old setting remains hidden as a compatibility fallback.
