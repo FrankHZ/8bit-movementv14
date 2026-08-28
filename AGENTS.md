@@ -8,11 +8,15 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - `src/scripts/main.js`: module hooks, settings registration, and optional `libWrapper` registration.
 - `src/scripts/settings.js`: module setting definitions.
 - `src/scripts/functions.js`: directional texture setup, movement update hooks, preview/persist logic.
-- `src/scripts/sprite-sheet.js`: row-mapped sprite-sheet validation, frame cropping, texture caching, and Token render hooks.
+- `src/scripts/sprite-sheet/config.js`: pure row mapping, defaults, validation, and frame-rectangle calculations.
+- `src/scripts/sprite-sheet.js`: stable sprite-sheet facade plus texture caching and Token render hooks.
 - `src/scripts/ui.js`: public UI facade.
 - `src/scripts/ui/`: Token HUD, Token Config, sprite previews, DOM helpers, and shared UI data.
 - `src/css/8bitmovement.css`: HUD and Token Config styling.
-- `src/lang/en.json`: English localization strings.
+- `src/lang/en.json` and `src/lang/cn.json`: English and Simplified Chinese localization strings. The `cn` code matches the Foundry-listed Chinese core translation package.
+- `test/`: dependency-free Node tests for pure logic and public facades.
+- `scripts/check.mjs`: syntax, JSON, version, and unit-test checks.
+- `docs/architecture.md`: current module boundaries and deferred refactor candidates.
 
 ## Development Rules
 
@@ -26,19 +30,29 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - Sprite-sheet source crop offsets are distinct from Token display offsets. Source rows are one-based and may be shared by multiple directions.
 - World settings provide sprite-sheet frame and direction-row defaults only for missing Token fields. Explicit values already saved in Token flags must always take priority.
 - Token Config field edits should use `{ render: false }`; rebuild only the module fieldset when its structure changes.
+- Keep every locale file's keys aligned with `src/lang/en.json`; `npm run check` enforces exact key parity.
 - Do not commit generated zip files unless the task is explicitly about packaging a release.
 
 ## Versioning and Local Release
 
-- The current development release is `1.5.1`.
-- The v1.5.1 manifest uses Foundry `minimum: 13` and `verified: 13.351`; v14 support is intended but not presently verified.
+- The current development release is `1.5.2`.
+- The v1.5.2 manifest uses Foundry `minimum: 13` and `verified: 13.351`; v14 support is intended but not presently verified.
 - Keep `package.json` and `src/module.json` versions identical.
-- Record this patch cycle under the `1.5.1` CHANGELOG entry.
+- Record this patch cycle under the `1.5.2` CHANGELOG entry.
 - `src/` is canonical. Run `npm run release:package` to generate the unpacked module, the version-free manual-install zip, and the versioned release zip under `release/`.
+- Once requested local work is complete and relevant checks pass, create a local commit without waiting for a separate commit instruction.
 - Local packaging or linking does not authorize pushing tags, publishing a GitHub release, or calling Foundry's release API.
 - Prefer a fixed packaged module asset over GitHub's mutable source-branch archive for release `download` URLs. Foundry can locate a nested manifest, but a version-specific asset is easier to reproduce and roll back.
 
 ## Useful Checks
+
+Run the complete lightweight check before packaging:
+
+```powershell
+npm run check
+```
+
+Run only the Node unit tests with `npm test`.
 
 Run syntax checks after script edits:
 

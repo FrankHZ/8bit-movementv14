@@ -2,7 +2,7 @@
 
 `8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
-This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It has been locally tested on Foundry VTT v13.351; the v1.5.1 manifest is verified for `13.351`, while v14 remains an intended but currently unverified target.
+This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It has been locally tested on Foundry VTT v13.351; the local v1.5.2 development manifest is verified for `13.351`, while v14 remains an intended but currently unverified target. The latest published release is v1.5.1.
 
 ## Features
 
@@ -14,6 +14,7 @@ This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It h
 - Save directional settings back to the actor's prototype token
 - Optional warning controls
 - Optional rotation animation override when `libWrapper` is active
+- English and Simplified Chinese interface localization
 
 ## Expected image naming
 
@@ -100,12 +101,16 @@ To initialize a token, select it and click the activate button from the Token HU
 
 ## Development notes
 
-This module does not currently have an automated test suite. Useful checks before committing:
+Run the lightweight automated checks before committing:
 
-- `node --check src/scripts/main.js`
-- `node --check src/scripts/functions.js`
-- `node --check src/scripts/ui.js`
-- `node -e "JSON.parse(require('fs').readFileSync('src/lang/en.json','utf8'))"`
+- `npm test` runs dependency-free unit tests with Node's built-in test runner.
+- `npm run check` syntax-checks all source scripts, parses key JSON files,
+  verifies package/manifest version alignment and locale key parity, and runs
+  the tests.
+- `git diff --check` catches whitespace errors before commit.
+
+See [`docs/architecture.md`](docs/architecture.md) for current module boundaries
+and deliberately deferred refactor candidates.
 
 Runtime behavior still needs to be checked in Foundry itself, especially Token HUD rendering, Token Config rendering, movement texture swaps, diagonal movement, and the optional `libWrapper` rotation wrapper.
 
@@ -143,7 +148,7 @@ This repo also includes a small helper for Foundry's Package Release API.
    npm run release:publish
    ```
 
-Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.1`. The API payload uses that tag for the version-specific manifest URL.
+Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.2`. The API payload uses that tag for the version-specific manifest URL.
 
 ## Credits
 
