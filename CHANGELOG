@@ -7,6 +7,7 @@ Change Log for Token Movement 8-bit Style.
     -Added a lightweight check command for JavaScript syntax, JSON parsing, manifest/package version alignment, and unit tests.
     -Documented the current architecture and ranked future refactor candidates without adding a bundler, TypeScript, or a Foundry mock environment.
     -Added Simplified Chinese localization using Foundry's established `cn` language code, with an automated test for locale keys, values, and placeholders.
+    -Removed duplicated English fallbacks from sprite-sheet default settings so missing localization keys remain visible and testable.
 
 1.5.1:
 
