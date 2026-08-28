@@ -2,14 +2,15 @@
 
 `8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
-This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It has been locally tested on Foundry VTT v13.351 and targets compatibility through v14.360.
+This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It has been locally tested on Foundry VTT v13.351; the v1.5.0 manifest is verified for `13.351`, while v14 remains an intended but currently unverified target.
 
 ## Features
 
 - Set directional token images from the Token HUD
 - Configure the same images from Token Config
 - Auto-detect direction suffixes in filenames during setup
-- Optional diagonal support using `UL`, `UR`, `DL`, and `DR` from either setup UI
+- Per-Token four/eight-direction switching in both image modes
+- Single-character RPG Maker sprite-sheet mode with configurable frame size
 - Save directional settings back to the actor's prototype token
 - Optional warning controls
 - Optional rotation animation override when `libWrapper` is active
@@ -31,13 +32,48 @@ Examples:
 
 Lowercase suffixes also work.
 
+## RPG Maker sprite sheets
+
+Sprite-sheet mode accepts one RPG Maker-style image. Each row can represent a
+direction and each column can be an animation frame. The default four-direction
+mapping is:
+
+| Row | Direction |
+| --- | --- |
+| 1 | Down |
+| 2 | Left |
+| 3 | Right |
+| 4 | Up |
+
+Enter the width and height of one frame and, if needed, a source crop X/Y offset
+in Token Config. Then assign a one-based source row to each active direction.
+Rows may be reused, so a missing diagonal can point to the same row as Up or
+Down. Enabling eight directions exposes four additional row assignments.
+
+The texture does not need to be evenly divisible by the frame size. Validation
+only requires positive frame sizes and row numbers, non-negative crop offsets,
+and enough texture bounds to contain every configured first-frame crop. The
+module currently displays only the first frame in each row; it does not yet
+play the walk animation. The current facing is stored in Token flags, while the
+Token document's texture path is not rewritten on each move.
+
 ## Setup
 
 Enable the module in a world, then configure the module settings from Foundry's Configure Settings dialog.
 
-- **Token HUD mode** adds movement image buttons to the token HUD.
+For manual installation, use this manifest URL:
+
+```text
+https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.0/src/module.json
+```
+
+- **Token HUD mode** adds movement image controls to the token HUD. Its panel
+  can be collapsed to a compact title bar and reopened with the visibility toggle.
 - **Token Settings mode** adds the same movement image controls to the Token Config appearance tab.
-- **Diagonal mode** enables four extra diagonal image slots.
+- **Use eight directions for this Token** enables the four diagonal directions
+  for either separate images or a sprite sheet. It is stored per Token.
+- **RPG Maker sprite sheet** can be selected as an alternative to separate
+  direction images from the Token HUD or Token Config.
 - **Only allow GM changes** restricts setup controls to GMs.
 - **Disable Rotation Animation** registers a `libWrapper` wrapper that suppresses Foundry's rotation animation during combined texture/rotation updates.
 
@@ -45,10 +81,10 @@ To initialize a token, select it and click the activate button from the Token HU
 
 ## Current status
 
-- Targeted at Foundry VTT `13` through `14.360`
+- Manifest minimum and verified versions are Foundry VTT `13` and `13.351`
 - Updated from earlier v10-v13 forks
 - Locally tested on Foundry VTT `13.351`
-- Still needs more real-world testing on Foundry v14 before calling it fully stable
+- Foundry v14 compatibility remains intended but needs real-world verification
 
 ## Development notes
 
@@ -86,7 +122,7 @@ This repo includes a small helper for Foundry's Package Release API.
    npm run release:publish
    ```
 
-Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.4.0`. The API payload uses that tag for the version-specific manifest URL.
+Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.0`. The API payload uses that tag for the version-specific manifest URL.
 
 ## Credits
 

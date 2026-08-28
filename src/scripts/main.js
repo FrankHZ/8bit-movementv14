@@ -1,13 +1,16 @@
 import { registerSettings } from "./settings.js";
 import { addListener } from "./functions.js";
+import { MODULE_NAME } from "./constants.js";
+import { registerSpriteSheetHooks } from "./sprite-sheet.js";
 import { createConfigButtons, createHudButtons } from "./ui.js";
 
 Hooks.on("init", () => {
   registerSettings();
+  registerSpriteSheetHooks();
 });
 
 Hooks.on("ready", async function () {
-  if (game.settings.get("8bit-movement", "disableRotationAnimation")) {
+  if (game.settings.get(MODULE_NAME, "disableRotationAnimation")) {
     if (!globalThis.libWrapper) {
       console.warn(
         "8bit-movement: libWrapper is not active; rotation animation wrapper was not registered.",
@@ -15,7 +18,7 @@ Hooks.on("ready", async function () {
     } else {
       try {
         const wrapperId = libWrapper.register(
-          "8bit-movement",
+          MODULE_NAME,
           "Token.prototype.animate",
           function (wrapped, ...args) {
             const [attributes, options = {}] = args;

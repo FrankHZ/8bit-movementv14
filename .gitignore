@@ -2,3 +2,4 @@ api-release.js
 .env
 .env.*
 !.env.example
+release/
