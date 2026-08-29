@@ -31,6 +31,7 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - World settings provide sprite-sheet frame and direction-row defaults only for missing Token fields. Explicit values already saved in Token flags must always take priority.
 - Token Config field edits should use `{ render: false }`; rebuild only the module fieldset when its structure changes.
 - Keep every locale file's keys aligned with `src/lang/en.json`; `npm run check` enforces exact key parity.
+- Foundry v13 fires module `init` before `game.i18n.initialize()`. Register setting `name` and `hint` values as localization keys; do not eagerly call `game.i18n.localize()` or `format()` during `init`.
 - Do not commit generated zip files unless the task is explicitly about packaging a release.
 
 ## Versioning and Local Release

@@ -4,7 +4,7 @@ import test from "node:test";
 
 import { registerSettings } from "../src/scripts/settings.js";
 
-test("sprite-sheet setting labels come from the localization dictionary", async () => {
+test("settings defer localization until Foundry renders them", async () => {
   const translations = JSON.parse(
     await readFile(new URL("../src/lang/en.json", import.meta.url), "utf8"),
   );
@@ -13,11 +13,6 @@ test("sprite-sheet setting labels come from the localization dictionary", async 
   Object.defineProperty(globalThis, "game", {
     configurable: true,
     value: {
-      i18n: {
-        format(key) {
-          return translations[key] ?? key;
-        },
-      },
       settings: {
         register(scope, key, options) {
           assert.equal(scope, "8bit-movement-frankhz");
@@ -30,30 +25,27 @@ test("sprite-sheet setting labels come from the localization dictionary", async 
   try {
     registerSettings();
 
-    const width = registered.get("spriteSheetDefaultFrameWidth");
-    assert.equal(
-      width.name,
-      translations["8BITMOVEMENT.Sprite-Sheet-Default-Frame-Width_name"],
-    );
-    assert.equal(
-      width.hint,
-      translations["8BITMOVEMENT.Sprite-Sheet-Default-Frame-Width_hint"],
-    );
+    assert.equal(registered.size, 16);
+    for (const [setting, options] of registered) {
+      assert.ok(
+        Object.hasOwn(translations, options.name),
+        `${setting}.name must be a localization key`,
+      );
+      if (options.hint) {
+        assert.ok(
+          Object.hasOwn(translations, options.hint),
+          `${setting}.hint must be a localization key`,
+        );
+      }
+    }
 
-    const height = registered.get("spriteSheetDefaultFrameHeight");
     assert.equal(
-      height.hint,
-      translations["8BITMOVEMENT.Sprite-Sheet-Default-Frame-Height_hint"],
-    );
-
-    const downRow = registered.get("spriteSheetDefaultRowDown");
-    assert.equal(
-      downRow.name,
-      `${translations["8BITMOVEMENT.Sprite-Sheet-Default-Row_name"]}: ${translations["8BITMOVEMENT.down"]}`,
+      registered.get("spriteSheetDefaultFrameWidth").name,
+      "8BITMOVEMENT.Sprite-Sheet-Default-Frame-Width_name",
     );
     assert.equal(
-      downRow.hint,
-      translations["8BITMOVEMENT.Sprite-Sheet-Default-Row_hint"],
+      registered.get("spriteSheetDefaultRowDown").name,
+      "8BITMOVEMENT.Sprite-Sheet-Default-Row-down_name",
     );
   } finally {
     if (previousDescriptor) {
