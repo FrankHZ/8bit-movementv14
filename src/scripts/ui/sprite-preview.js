@@ -3,6 +3,7 @@ import {
   inspectSpriteSheet,
   SPRITE_SHEET_DIRECTIONS,
 } from "../sprite-sheet.js";
+import { projectDirectionToScreen } from "../constants.js";
 
 const DIRECTION_BY_KEY = Object.freeze(
   Object.fromEntries(
@@ -47,11 +48,21 @@ function getValidationMessage(result) {
   }
 }
 
-function createDirectionPreview(direction, onActivate, showLabel) {
+function createDirectionPreview(
+  direction,
+  onActivate,
+  showLabel,
+  isometric,
+  compact,
+) {
   const card = document.createElement(onActivate ? "button" : "div");
   if (onActivate) card.type = "button";
   card.className = `movement-direction-preview movement-direction-${direction.key}`;
   card.dataset.direction = direction.key;
+  card.dataset.screenDirection = projectDirectionToScreen(
+    direction.key,
+    isometric,
+  );
   card.title = localize(direction.labelKey);
   if (onActivate) card.setAttribute("aria-label", card.title);
 
@@ -68,14 +79,22 @@ function createDirectionPreview(direction, onActivate, showLabel) {
     card.append(label);
   }
   if (onActivate) card.addEventListener("click", onActivate);
-  return { card, image, direction };
+  return { card, image, direction, compact };
 }
 
 function applyFramePreview(preview, result) {
   const row = result.directionRows[preview.direction.key];
   const cropY = result.sourceOffsetY + (row - 1) * result.frameHeight;
-  preview.image.parentElement.style.aspectRatio =
-    `${result.frameWidth} / ${result.frameHeight}`;
+  const viewport = preview.image.parentElement;
+  viewport.style.aspectRatio = `${result.frameWidth} / ${result.frameHeight}`;
+  if (preview.compact) {
+    const maximumSize = 48;
+    const frameRatio = result.frameWidth / result.frameHeight;
+    const width = frameRatio >= 1 ? maximumSize : maximumSize * frameRatio;
+    const height = frameRatio >= 1 ? maximumSize / frameRatio : maximumSize;
+    viewport.style.width = `${width}px`;
+    viewport.style.height = `${height}px`;
+  }
   preview.image.src = result.src;
   preview.image.style.width =
     `${(result.textureWidth / result.frameWidth) * 100}%`;
@@ -91,6 +110,7 @@ export function createSpriteSheetPreview({
   diagonal = false,
   errorsOnly = false,
   showLabels = true,
+  isometric = false,
   onActivate,
 } = {}) {
   const directions = getSpriteSheetDirections(diagonal);
@@ -106,9 +126,16 @@ export function createSpriteSheetPreview({
 
   const grid = document.createElement("div");
   grid.className = "movement-direction-preview-grid";
+  grid.classList.toggle("isometric", isometric);
   grid.hidden = true;
   const previews = directions.map((direction) =>
-    createDirectionPreview(direction, onActivate, showLabels),
+    createDirectionPreview(
+      direction,
+      onActivate,
+      showLabels,
+      isometric,
+      compact,
+    ),
   );
   grid.append(...previews.map(({ card }) => card));
   element.append(status, grid);

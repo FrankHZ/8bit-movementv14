@@ -1,6 +1,8 @@
 import {
   DIRECTIONAL_IMAGE_MODE,
+  getIsometricPerspectiveMode,
   getTokenDiagonalMode,
+  mapCanvasDirectionToSource,
   MODULE_NAME,
   SPRITE_SHEET_MODE,
 } from "./constants.js";
@@ -272,6 +274,7 @@ export async function addListener() {
     if (!token.flags[MODULE_NAME]) return;
     const spriteSheetMode = isSpriteSheetMode(token);
     const diagonalMode = getTokenDiagonalMode(token);
+    const isometric = getIsometricPerspectiveMode();
     if (
       !spriteSheetMode &&
       !token.getFlag(MODULE_NAME, "up") &&
@@ -290,15 +293,17 @@ export async function addListener() {
       foundry.utils.hasProperty(change, "y");
     const rotation = foundry.utils.hasProperty(change, "rotation");
     if (move) {
-      const direction = movementDirection(
-        token,
-        change,
-        diagonalMode,
+      const direction = mapCanvasDirectionToSource(
+        movementDirection(token, change, diagonalMode),
+        isometric,
       );
       if (spriteSheetMode) setSpriteSheetFacing(token, change, direction);
       else setDirectionalTexture(token, change, direction);
     } else if (rotation) {
-      const direction = rotationDirection(change.rotation, diagonalMode);
+      const direction = mapCanvasDirectionToSource(
+        rotationDirection(change.rotation, diagonalMode),
+        isometric,
+      );
       if (spriteSheetMode) setSpriteSheetFacing(token, change, direction);
       else setDirectionalTexture(token, change, direction);
     }

@@ -1,5 +1,17 @@
 Change Log for Token Movement 8-bit Style.
 
+1.5.2:
+
+    -Separated deterministic sprite-sheet configuration and crop calculations from Foundry/PIXI runtime behavior while keeping the existing sprite-sheet import facade compatible.
+    -Added dependency-free Node tests for sprite-sheet defaults, direction fallbacks, row mapping, crop offsets, bounds errors, frame rectangles, and facade exports.
+    -Added a lightweight check command for JavaScript syntax, JSON parsing, manifest/package version alignment, and unit tests.
+    -Documented the current architecture and ranked future refactor candidates without adding a bundler, TypeScript, or a Foundry mock environment.
+    -Added Simplified Chinese localization using Foundry's established `cn` language code, with an automated test for locale keys, values, and placeholders.
+    -Removed duplicated English fallbacks and deferred setting localization until render time, matching Foundry v13's init-before-i18n lifecycle order.
+    -Verified the manifest for Foundry v14.367 and made cropped sprite-sheet Tokens preserve Isometric Perspective's upright mesh transformation while retaining the existing standard-view layout.
+    -Added a world-level Isometric Perspective mode that projects canvas movement into screen-space facings and presents both HUD previews as a spacious large diamond over one continuous background; moving southeast selects Down Right, while source preview positions remain unchanged.
+    -Unified standard and isometric HUD previews around the same unboxed, evenly spaced image treatment and removed the preview body's outer inset.
+
 1.5.1:
 
     -Added world-level sprite-sheet defaults for frame width, frame height, and all eight direction rows without overwriting existing Token configurations.

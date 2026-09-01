@@ -2,7 +2,7 @@
 
 `8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
-This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It has been locally tested on Foundry VTT v13.351; the v1.5.1 manifest is verified for `13.351`, while v14 remains an intended but currently unverified target.
+This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. The v1.5.2 manifest supports v13 and is verified for Foundry VTT `14.367`. The latest published release is v1.5.2.
 
 ## Features
 
@@ -14,6 +14,9 @@ This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. It h
 - Save directional settings back to the actor's prototype token
 - Optional warning controls
 - Optional rotation animation override when `libWrapper` is active
+- English and Simplified Chinese interface localization
+- Upright sprite-sheet Tokens in scenes projected by `isometric-perspective`
+- Optional world-level isometric screen-facing movement and HUD layout
 
 ## Expected image naming
 
@@ -70,7 +73,7 @@ Enable the module in a world, then configure the module settings from Foundry's 
 For manual installation, use this manifest URL:
 
 ```text
-https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.1/src/module.json
+https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.2/src/module.json
 ```
 
 When installing a downloaded ZIP manually, the final directory must be named
@@ -80,8 +83,11 @@ Extract All workflow; a versioned ZIP may otherwise create a mismatched folder
 name that Foundry will not recognize.
 
 - **Token HUD mode** adds movement image controls to the token HUD. Its panel
-  can be collapsed to a compact title bar and reopened with the visibility toggle.
+  can be collapsed to a compact title bar and reopened with the visibility toggle. Both standard and isometric layouts place unboxed direction images over one continuous edge-to-edge preview background.
 - **Token Settings mode** adds the same movement image controls to the Token Config appearance tab.
+- The Token HUD can clear only the selected Token. Token Config additionally
+  provides Save to Prototype and Clear All actions, where Clear All resets both
+  the selected Token and its actor's prototype Token.
 - **Use eight directions for this Token** enables the four diagonal directions
   for either separate images or a sprite sheet. It is stored per Token.
 - **RPG Maker sprite sheet** can be selected as an alternative to separate
@@ -91,23 +97,32 @@ name that Foundry will not recognize.
 
 To initialize a token, select it and click the activate button from the Token HUD or Token Config. If the current texture filename contains a direction suffix, the module infers sibling image paths. Otherwise, every direction starts with the current token texture and can be changed manually.
 
+Enable **Isometric Perspective direction layout** in Module Settings when the world uses an isometric grid. Movement along Foundry's transformed canvas axes selects the matching screen-space facing (for example, moving southeast selects Down Right). The HUD uses a spacious large-diamond arrangement over one continuous preview background while preserving source-art positions: Down stays at the bottom and Down Right stays at the lower right.
+
 ## Current status
 
-- Manifest minimum and verified versions are Foundry VTT `13` and `13.351`
+- Manifest minimum and verified versions are Foundry VTT `13` and `14.367`
 - Updated from earlier v10-v13 forks
-- Locally tested on Foundry VTT `13.351`
-- Foundry v14 compatibility remains intended but needs real-world verification
+- Smoke-tested on Foundry VTT `13.351` and `14.367`, including a cross-machine
+  v1.5.2 check on Foundry VTT `14.367`
 
 ## Development notes
 
-This module does not currently have an automated test suite. Useful checks before committing:
+Run the lightweight automated checks before committing:
 
-- `node --check src/scripts/main.js`
-- `node --check src/scripts/functions.js`
-- `node --check src/scripts/ui.js`
-- `node -e "JSON.parse(require('fs').readFileSync('src/lang/en.json','utf8'))"`
+- `npm test` runs dependency-free unit tests with Node's built-in test runner.
+- `npm run check` syntax-checks all source scripts, parses key JSON files,
+  verifies package/manifest version alignment and locale key parity, and runs
+  the tests.
+- `git diff --check` catches whitespace errors before commit.
 
-Runtime behavior still needs to be checked in Foundry itself, especially Token HUD rendering, Token Config rendering, movement texture swaps, diagonal movement, and the optional `libWrapper` rotation wrapper.
+See [`docs/architecture.md`](docs/architecture.md) for current module boundaries
+and deliberately deferred refactor candidates.
+
+The automated suite does not emulate the complete Foundry/PIXI runtime. For
+future releases, repeat the cross-machine smoke test for Token HUD and Token
+Config rendering, cardinal/diagonal movement, standard/isometric sprite layout,
+and the optional `libWrapper` rotation wrapper.
 
 ## Release helper
 
@@ -127,23 +142,23 @@ This repo also includes a small helper for Foundry's Package Release API.
 3. Keep `.env` and `.env.local` private; they are ignored by git.
 4. Confirm the generated API payload:
 
-   ```bash
+   ```powershell
    npm run release:payload
    ```
 
 5. Validate the release with Foundry without saving it:
 
-   ```bash
+   ```powershell
    npm run release:dry-run
    ```
 
 6. Publish the release:
 
-   ```bash
+   ```powershell
    npm run release:publish
    ```
 
-Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.1`. The API payload uses that tag for the version-specific manifest URL.
+Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.2`. The API payload uses that tag for the version-specific manifest URL.
 
 ## Credits
 

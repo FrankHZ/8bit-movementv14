@@ -3,7 +3,11 @@ import {
   imageLoader,
   initializeMovement,
 } from "../functions.js";
-import { SPRITE_SHEET_MODE } from "../constants.js";
+import {
+  getIsometricPerspectiveMode,
+  projectDirectionToScreen,
+  SPRITE_SHEET_MODE,
+} from "../constants.js";
 import {
   CARDINAL_DIRECTIONS,
   DIAGONAL_DIRECTIONS,
@@ -20,14 +24,24 @@ import {
 import { createSpriteSheetPreview } from "./sprite-preview.js";
 
 const DIRECTION_META = Object.freeze({
-  up: { direction: "up", glyph: "↑" },
-  down: { direction: "down", glyph: "↓" },
-  left: { direction: "left", glyph: "←" },
-  right: { direction: "right", glyph: "→" },
-  UL: { direction: "up-left", glyph: "↖" },
-  UR: { direction: "up-right", glyph: "↗" },
-  DL: { direction: "down-left", glyph: "↙" },
-  DR: { direction: "down-right", glyph: "↘" },
+  up: { direction: "up" },
+  down: { direction: "down" },
+  left: { direction: "left" },
+  right: { direction: "right" },
+  UL: { direction: "up-left" },
+  UR: { direction: "up-right" },
+  DL: { direction: "down-left" },
+  DR: { direction: "down-right" },
+});
+const DIRECTION_GLYPHS = Object.freeze({
+  up: "↑",
+  down: "↓",
+  left: "←",
+  right: "→",
+  "up-left": "↖",
+  "up-right": "↗",
+  "down-left": "↙",
+  "down-right": "↘",
 });
 const collapsedHudPanels = new Set();
 
@@ -146,13 +160,25 @@ function appendActivationPanel(middleColumn, token, tokenDocument, sheet) {
   middleColumn.append(panel);
 }
 
-function createDirectionButton(direction, src, token, sheet, locked) {
+function createDirectionButton(
+  direction,
+  src,
+  token,
+  sheet,
+  locked,
+  isometric,
+) {
   const meta = DIRECTION_META[direction.key];
+  const screenDirection = projectDirectionToScreen(
+    meta.direction,
+    isometric,
+  );
   const title = localize(direction.labelKey);
   const button = document.createElement("button");
   button.type = "button";
   button.className = "movement-hud-direction";
   button.dataset.direction = meta.direction;
+  button.dataset.screenDirection = screenDirection;
   button.title = title;
   button.setAttribute("aria-label", title);
   button.disabled = locked;
@@ -162,7 +188,7 @@ function createDirectionButton(direction, src, token, sheet, locked) {
   image.alt = title;
   const glyph = document.createElement("span");
   glyph.className = "movement-hud-direction-glyph";
-  glyph.textContent = meta.glyph;
+  glyph.textContent = DIRECTION_GLYPHS[screenDirection];
   button.append(image, glyph);
   if (!locked) {
     button.addEventListener("click", async () => {
@@ -179,9 +205,12 @@ function appendDirectionalPreview(
   images,
   locked,
   diagonalMode,
+  isometric,
 ) {
+  body.classList.add("movement-hud-preview-body");
   const grid = document.createElement("div");
   grid.className = "movement-hud-direction-grid";
+  grid.classList.toggle("isometric", isometric);
   for (const direction of CARDINAL_DIRECTIONS) {
     grid.append(
       createDirectionButton(
@@ -190,6 +219,7 @@ function appendDirectionalPreview(
         token,
         sheet,
         locked,
+        isometric,
       ),
     );
   }
@@ -202,6 +232,7 @@ function appendDirectionalPreview(
           token,
           sheet,
           locked,
+          isometric,
         ),
       );
     }
@@ -222,13 +253,16 @@ function appendSpriteSheetPreview(
   sheet,
   locked,
   diagonalMode,
+  isometric,
 ) {
+  body.classList.add("movement-hud-preview-body");
   const config = getSpriteSheetConfig(tokenDocument);
   const preview = createSpriteSheetPreview({
     compact: true,
     diagonal: diagonalMode,
     errorsOnly: true,
     showLabels: false,
+    isometric,
     onActivate: locked
       ? undefined
       : async () => {
@@ -341,6 +375,7 @@ export async function createHudButtons(sheet, element) {
   const images = getDirectionalImages(tokenDocument, fallbackImage);
   const movementMode = getMovementMode(tokenDocument);
   const diagonalMode = getTokenDiagonalMode(tokenDocument);
+  const isometric = getIsometricPerspectiveMode();
   const locked = !!tokenDocument.getFlag(MODULE_NAME, "locked");
   const modeLabel = `${localize(
     movementMode === SPRITE_SHEET_MODE
@@ -352,6 +387,7 @@ export async function createHudButtons(sheet, element) {
       : "8BITMOVEMENT.Four-Directions",
   )}`;
   const { panel, tools, body } = createPanel(modeLabel);
+  panel.dataset.perspective = isometric ? "isometric" : "standard";
   appendToolbarActions(
     tools,
     tokenDocument,
@@ -370,6 +406,7 @@ export async function createHudButtons(sheet, element) {
       sheet,
       locked,
       diagonalMode,
+      isometric,
     );
   } else {
     appendDirectionalPreview(
@@ -379,6 +416,7 @@ export async function createHudButtons(sheet, element) {
       images,
       locked,
       diagonalMode,
+      isometric,
     );
   }
   middleColumn.append(panel);
