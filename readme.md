@@ -16,7 +16,7 @@ This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. The 
 - Optional rotation animation override when `libWrapper` is active
 - English and Simplified Chinese interface localization
 - Upright sprite-sheet Tokens in scenes projected by `isometric-perspective`
-- Optional world-level isometric HUD direction layout
+- Optional world-level isometric screen-facing movement and HUD layout
 
 ## Expected image naming
 
@@ -85,6 +85,9 @@ name that Foundry will not recognize.
 - **Token HUD mode** adds movement image controls to the token HUD. Its panel
   can be collapsed to a compact title bar and reopened with the visibility toggle. Both standard and isometric layouts place unboxed direction images over one continuous edge-to-edge preview background.
 - **Token Settings mode** adds the same movement image controls to the Token Config appearance tab.
+- The Token HUD can clear only the selected Token. Token Config additionally
+  provides Save to Prototype and Clear All actions, where Clear All resets both
+  the selected Token and its actor's prototype Token.
 - **Use eight directions for this Token** enables the four diagonal directions
   for either separate images or a sprite sheet. It is stored per Token.
 - **RPG Maker sprite sheet** can be selected as an alternative to separate
@@ -100,7 +103,8 @@ Enable **Isometric Perspective direction layout** in Module Settings when the wo
 
 - Manifest minimum and verified versions are Foundry VTT `13` and `14.367`
 - Updated from earlier v10-v13 forks
-- Tested on Foundry VTT `13.351`; current development targets `14.367`
+- Smoke-tested locally on Foundry VTT `13.351` and `14.367`; the final v1.5.2
+  cross-machine check is pending
 
 ## Development notes
 
@@ -115,7 +119,10 @@ Run the lightweight automated checks before committing:
 See [`docs/architecture.md`](docs/architecture.md) for current module boundaries
 and deliberately deferred refactor candidates.
 
-Runtime behavior still needs to be checked in Foundry itself, especially Token HUD rendering, Token Config rendering, movement texture swaps, diagonal movement, and the optional `libWrapper` rotation wrapper.
+The automated suite does not emulate the complete Foundry/PIXI runtime. Before
+publishing, repeat the cross-machine smoke test for Token HUD and Token Config
+rendering, cardinal/diagonal movement, standard/isometric sprite layout, and the
+optional `libWrapper` rotation wrapper.
 
 ## Release helper
 
@@ -135,19 +142,19 @@ This repo also includes a small helper for Foundry's Package Release API.
 3. Keep `.env` and `.env.local` private; they are ignored by git.
 4. Confirm the generated API payload:
 
-   ```bash
+   ```powershell
    npm run release:payload
    ```
 
 5. Validate the release with Foundry without saving it:
 
-   ```bash
+   ```powershell
    npm run release:dry-run
    ```
 
 6. Publish the release:
 
-   ```bash
+   ```powershell
    npm run release:publish
    ```
 

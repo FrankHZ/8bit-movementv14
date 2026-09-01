@@ -40,6 +40,8 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 ## Versioning and Local Release
 
 - The current development release is `1.5.2`.
+- The latest published release is `1.5.1`. Keep README's install manifest URL
+  pinned to v1.5.1 until the v1.5.2 tag and GitHub release actually exist.
 - The v1.5.2 manifest uses Foundry `minimum: 13` and `verified: 14.367`.
 - Keep `package.json` and `src/module.json` versions identical.
 - Record this patch cycle under the `1.5.2` CHANGELOG entry.
@@ -84,6 +86,7 @@ Manual Foundry checks are still important:
 - Confirm sprite previews and rendered Tokens use the first frame from every configured row.
 - Confirm sprite-sheet Tokens remain upright in an Isometric Perspective Scene and retain normal scale/offset behavior in a standard Scene.
 - Enable the world isometric layout and confirm southeast movement selects source Down Right; both HUD modes should have no individual cells and should space the source previews across one continuous large-diamond background.
+- Confirm the standard HUD uses the same unboxed, continuous-background preview treatment without the isometric direction projection.
 - Collapse and reopen the HUD panel, then confirm its state survives a HUD re-render.
 - Test locking/unlocking movement settings.
 - Test Save to Prototype, Clear Token, and Clear All independently.
