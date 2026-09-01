@@ -7,8 +7,9 @@ boundaries.
 
 ## Current layers
 
-1. `src/scripts/constants.js` owns the module ID, image-mode constants, and the
-   compatibility fallback for diagonal mode.
+1. `src/scripts/constants.js` owns the module ID, image-mode constants, the
+   compatibility fallback for diagonal mode, and source-to-screen isometric
+   direction projection.
 2. `src/scripts/sprite-sheet/config.js` owns sprite-sheet direction metadata,
    default merging, input validation, and first-frame rectangle calculations.
    It has no PIXI or Token dependency, so it is the primary unit-test boundary.

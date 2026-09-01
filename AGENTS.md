@@ -28,6 +28,7 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - Keep `libWrapper.register` calls during or after Foundry's `init` hook.
 - Avoid raw `innerHTML` for image paths or user-controlled values in UI code.
 - Four/eight-direction mode is a per-Token flag. The hidden world setting exists only as a compatibility fallback for older Tokens.
+- Isometric Perspective direction layout is a world setting. It changes HUD screen-space placement only; source flags and sprite-sheet row meanings remain unchanged (`down` projects southwest).
 - Sprite-sheet source crop offsets are distinct from Token display offsets. Source rows are one-based and may be shared by multiple directions.
 - World settings provide sprite-sheet frame and direction-row defaults only for missing Token fields. Explicit values already saved in Token flags must always take priority.
 - Token Config field edits should use `{ render: false }`; rebuild only the module fieldset when its structure changes.
@@ -82,6 +83,7 @@ Manual Foundry checks are still important:
 - Test source frame size, crop offsets, repeated direction rows, and out-of-bounds validation.
 - Confirm sprite previews and rendered Tokens use the first frame from every configured row.
 - Confirm sprite-sheet Tokens remain upright in an Isometric Perspective Scene and retain normal scale/offset behavior in a standard Scene.
+- Enable the world isometric layout and confirm both HUD preview modes place Down southwest and project all other four/eight-direction entries consistently.
 - Collapse and reopen the HUD panel, then confirm its state survives a HUD re-render.
 - Test locking/unlocking movement settings.
 - Test Save to Prototype, Clear Token, and Clear All independently.

@@ -371,6 +371,39 @@ button.movement-direction-preview {
     grid-area: 3 / 3;
 }
 
+/* Screen-space placement can differ from the source-art direction in isometric HUDs. */
+.movement-direction-preview[data-direction="up-left"] {
+    grid-area: 1 / 1;
+}
+
+.movement-direction-preview[data-direction="up"] {
+    grid-area: 1 / 2;
+}
+
+.movement-direction-preview[data-direction="up-right"] {
+    grid-area: 1 / 3;
+}
+
+.movement-direction-preview[data-direction="left"] {
+    grid-area: 2 / 1;
+}
+
+.movement-direction-preview[data-direction="right"] {
+    grid-area: 2 / 3;
+}
+
+.movement-direction-preview[data-direction="down-left"] {
+    grid-area: 3 / 1;
+}
+
+.movement-direction-preview[data-direction="down"] {
+    grid-area: 3 / 2;
+}
+
+.movement-direction-preview[data-direction="down-right"] {
+    grid-area: 3 / 3;
+}
+
 #token-hud .movement-sprite-status {
     color: rgb(255 255 255 / 72%);
     background: rgb(255 255 255 / 5%);

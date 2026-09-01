@@ -1,4 +1,7 @@
-import { MODULE_NAME } from "./constants.js";
+import {
+  ISOMETRIC_PERSPECTIVE_SETTING,
+  MODULE_NAME,
+} from "./constants.js";
 import {
   DEFAULT_RPGM_FRAME_SIZE,
   SPRITE_SHEET_DEFAULT_FRAME_HEIGHT_SETTING,
@@ -40,6 +43,15 @@ export const registerSettings = function () {
     scope: "world",
     config: true,
     default: true,
+    type: Boolean,
+    requiresReload: true,
+  });
+  game.settings.register(MODULE_NAME, ISOMETRIC_PERSPECTIVE_SETTING, {
+    name: "8BITMOVEMENT.Isometric-Perspective_name",
+    hint: "8BITMOVEMENT.Isometric-Perspective_hint",
+    scope: "world",
+    config: true,
+    default: false,
     type: Boolean,
     requiresReload: true,
   });

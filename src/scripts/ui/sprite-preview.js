@@ -3,6 +3,7 @@ import {
   inspectSpriteSheet,
   SPRITE_SHEET_DIRECTIONS,
 } from "../sprite-sheet.js";
+import { projectDirectionToScreen } from "../constants.js";
 
 const DIRECTION_BY_KEY = Object.freeze(
   Object.fromEntries(
@@ -47,11 +48,20 @@ function getValidationMessage(result) {
   }
 }
 
-function createDirectionPreview(direction, onActivate, showLabel) {
+function createDirectionPreview(
+  direction,
+  onActivate,
+  showLabel,
+  isometric,
+) {
   const card = document.createElement(onActivate ? "button" : "div");
   if (onActivate) card.type = "button";
   card.className = `movement-direction-preview movement-direction-${direction.key}`;
-  card.dataset.direction = direction.key;
+  card.dataset.direction = projectDirectionToScreen(
+    direction.key,
+    isometric,
+  );
+  card.dataset.sourceDirection = direction.key;
   card.title = localize(direction.labelKey);
   if (onActivate) card.setAttribute("aria-label", card.title);
 
@@ -91,6 +101,7 @@ export function createSpriteSheetPreview({
   diagonal = false,
   errorsOnly = false,
   showLabels = true,
+  isometric = false,
   onActivate,
 } = {}) {
   const directions = getSpriteSheetDirections(diagonal);
@@ -106,9 +117,15 @@ export function createSpriteSheetPreview({
 
   const grid = document.createElement("div");
   grid.className = "movement-direction-preview-grid";
+  grid.classList.toggle("isometric", isometric);
   grid.hidden = true;
   const previews = directions.map((direction) =>
-    createDirectionPreview(direction, onActivate, showLabels),
+    createDirectionPreview(
+      direction,
+      onActivate,
+      showLabels,
+      isometric,
+    ),
   );
   grid.append(...previews.map(({ card }) => card));
   element.append(status, grid);

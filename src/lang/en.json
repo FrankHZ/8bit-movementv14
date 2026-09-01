@@ -21,6 +21,8 @@
   "8BITMOVEMENT.Settings-Mode_hint": "With this setting on the setup of the token can be done via the token Settings",
   "8BITMOVEMENT.Token-Mode_name": "Token HUD mode: ",
   "8BITMOVEMENT.Token-Mode_hint": "With this setting on the setup of the token can be done via the token HUD",
+  "8BITMOVEMENT.Isometric-Perspective_name": "Isometric Perspective direction layout",
+  "8BITMOVEMENT.Isometric-Perspective_hint": "Project HUD direction previews onto an isometric grid. Down appears southwest, right southeast, up northeast, and left northwest.",
   "8BITMOVEMENT.Diagonal-Mode_name": "Legacy diagonal mode: ",
   "8BITMOVEMENT.Diagonal-Mode_hint": "Compatibility fallback for Tokens created before diagonal mode became a per-Token setting.",
   "8BITMOVEMENT.Warn.No_Images": "No directional images found for this token, please upload directional images first.",

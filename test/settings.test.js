@@ -25,7 +25,7 @@ test("settings defer localization until Foundry renders them", async () => {
   try {
     registerSettings();
 
-    assert.equal(registered.size, 16);
+    assert.equal(registered.size, 17);
     for (const [setting, options] of registered) {
       assert.ok(
         Object.hasOwn(translations, options.name),
@@ -46,6 +46,15 @@ test("settings defer localization until Foundry renders them", async () => {
     assert.equal(
       registered.get("spriteSheetDefaultRowDown").name,
       "8BITMOVEMENT.Sprite-Sheet-Default-Row-down_name",
+    );
+    assert.deepEqual(
+      {
+        default: registered.get("isometricPerspective").default,
+        requiresReload:
+          registered.get("isometricPerspective").requiresReload,
+        scope: registered.get("isometricPerspective").scope,
+      },
+      { default: false, requiresReload: true, scope: "world" },
     );
   } finally {
     if (previousDescriptor) {

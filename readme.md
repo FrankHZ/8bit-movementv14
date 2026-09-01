@@ -16,6 +16,7 @@ This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. The 
 - Optional rotation animation override when `libWrapper` is active
 - English and Simplified Chinese interface localization
 - Upright sprite-sheet Tokens in scenes projected by `isometric-perspective`
+- Optional world-level isometric HUD direction layout
 
 ## Expected image naming
 
@@ -92,6 +93,8 @@ name that Foundry will not recognize.
 - **Disable Rotation Animation** registers a `libWrapper` wrapper that suppresses Foundry's rotation animation during combined texture/rotation updates.
 
 To initialize a token, select it and click the activate button from the Token HUD or Token Config. If the current texture filename contains a direction suffix, the module infers sibling image paths. Otherwise, every direction starts with the current token texture and can be changed manually.
+
+Enable **Isometric Perspective direction layout** in Module Settings when the world uses an isometric grid. It preserves the source-art meanings and projects their HUD positions into screen space: Down is southwest, Right is southeast, Up is northeast, and Left is northwest. Eight-direction previews are projected onto the remaining cardinal screen positions.
 
 ## Current status
 
