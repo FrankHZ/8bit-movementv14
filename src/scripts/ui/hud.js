@@ -177,8 +177,8 @@ function createDirectionButton(
   const button = document.createElement("button");
   button.type = "button";
   button.className = "movement-hud-direction";
-  button.dataset.direction = screenDirection;
-  button.dataset.sourceDirection = meta.direction;
+  button.dataset.direction = meta.direction;
+  button.dataset.screenDirection = screenDirection;
   button.title = title;
   button.setAttribute("aria-label", title);
   button.disabled = locked;

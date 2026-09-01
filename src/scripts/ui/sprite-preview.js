@@ -57,11 +57,11 @@ function createDirectionPreview(
   const card = document.createElement(onActivate ? "button" : "div");
   if (onActivate) card.type = "button";
   card.className = `movement-direction-preview movement-direction-${direction.key}`;
-  card.dataset.direction = projectDirectionToScreen(
+  card.dataset.direction = direction.key;
+  card.dataset.screenDirection = projectDirectionToScreen(
     direction.key,
     isometric,
   );
-  card.dataset.sourceDirection = direction.key;
   card.title = localize(direction.labelKey);
   if (onActivate) card.setAttribute("aria-label", card.title);
 

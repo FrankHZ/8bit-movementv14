@@ -94,7 +94,7 @@ name that Foundry will not recognize.
 
 To initialize a token, select it and click the activate button from the Token HUD or Token Config. If the current texture filename contains a direction suffix, the module infers sibling image paths. Otherwise, every direction starts with the current token texture and can be changed manually.
 
-Enable **Isometric Perspective direction layout** in Module Settings when the world uses an isometric grid. It preserves the source-art meanings and projects their HUD positions into screen space: Down is southwest, Right is southeast, Up is northeast, and Left is northwest. Eight-direction previews are projected onto the remaining cardinal screen positions.
+Enable **Isometric Perspective direction layout** in Module Settings when the world uses an isometric grid. The HUD becomes a large diamond made from diamond-shaped preview cells while preserving source-art positions: Down stays at the bottom and Down Right stays at the lower right. Their projected game directions are southwest and south respectively; the separate-image HUD glyphs show those game directions.
 
 ## Current status
 
