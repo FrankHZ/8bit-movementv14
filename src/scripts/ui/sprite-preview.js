@@ -78,14 +78,22 @@ function createDirectionPreview(
     card.append(label);
   }
   if (onActivate) card.addEventListener("click", onActivate);
-  return { card, image, direction };
+  return { card, image, direction, isometric };
 }
 
 function applyFramePreview(preview, result) {
   const row = result.directionRows[preview.direction.key];
   const cropY = result.sourceOffsetY + (row - 1) * result.frameHeight;
-  preview.image.parentElement.style.aspectRatio =
-    `${result.frameWidth} / ${result.frameHeight}`;
+  const viewport = preview.image.parentElement;
+  viewport.style.aspectRatio = `${result.frameWidth} / ${result.frameHeight}`;
+  if (preview.isometric) {
+    const maximumSize = 48;
+    const frameRatio = result.frameWidth / result.frameHeight;
+    const width = frameRatio >= 1 ? maximumSize : maximumSize * frameRatio;
+    const height = frameRatio >= 1 ? maximumSize / frameRatio : maximumSize;
+    viewport.style.width = `${width}px`;
+    viewport.style.height = `${height}px`;
+  }
   preview.image.src = result.src;
   preview.image.style.width =
     `${(result.textureWidth / result.frameWidth) * 100}%`;

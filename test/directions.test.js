@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   getIsometricPerspectiveMode,
+  mapCanvasDirectionToSource,
   projectDirectionToScreen,
 } from "../src/scripts/constants.js";
 
@@ -21,6 +22,30 @@ test("isometric projection places source directions on screen", () => {
   for (const [source, screen] of Object.entries(expected)) {
     assert.equal(projectDirectionToScreen(source, true), screen);
     assert.equal(projectDirectionToScreen(source, false), source);
+  }
+});
+
+test("isometric canvas axes select the matching source art", () => {
+  const expected = {
+    down: "right",
+    right: "up",
+    up: "left",
+    left: "down",
+    "down-right": "up-right",
+    "up-right": "up-left",
+    "up-left": "down-left",
+    "down-left": "down-right",
+  };
+
+  for (const [canvasDirection, sourceDirection] of Object.entries(expected)) {
+    assert.equal(
+      mapCanvasDirectionToSource(canvasDirection, true),
+      sourceDirection,
+    );
+    assert.equal(
+      mapCanvasDirectionToSource(canvasDirection, false),
+      canvasDirection,
+    );
   }
 });
 

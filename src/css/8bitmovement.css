@@ -405,14 +405,16 @@ button.movement-direction-preview {
 }
 
 #token-hud .movement-hud-direction-grid.isometric {
-    grid-template-columns: repeat(5, 40px);
-    grid-template-rows: repeat(5, 40px);
-    gap: 2px;
+    grid-template-columns: repeat(5, 29px);
+    grid-template-rows: repeat(5, 29px);
+    gap: 0;
+    padding: 28px 0;
 }
 
 #token-hud .movement-hud-direction-grid.isometric .movement-hud-direction {
-    width: 40px;
-    height: 40px;
+    width: 56px;
+    height: 56px;
+    place-self: center;
     clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
     border-radius: 0;
 }
@@ -424,7 +426,10 @@ button.movement-direction-preview {
 }
 
 #token-hud .movement-hud-direction-grid.isometric .movement-hud-grid-center {
+    width: 56px;
+    height: 56px;
     grid-area: 3 / 3;
+    place-self: center;
     clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
     border-radius: 0;
 }
@@ -462,13 +467,19 @@ button.movement-direction-preview {
 }
 
 #token-hud .movement-sprite-preview.compact .movement-direction-preview-grid.isometric {
-    grid-template-columns: repeat(5, 38px);
-    grid-template-rows: repeat(5, minmax(42px, auto));
-    gap: 2px;
+    grid-template-columns: repeat(5, 29px);
+    grid-template-rows: repeat(5, 29px);
+    gap: 0;
+    padding: 28px 0;
 }
 
 #token-hud .movement-sprite-preview.compact .movement-direction-preview-grid.isometric .movement-direction-preview {
-    width: 38px;
+    width: 56px;
+    height: 56px;
+    place-self: center;
+    justify-content: center;
+    padding: 4px;
+    overflow: hidden;
     clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
     border-radius: 0;
 }
