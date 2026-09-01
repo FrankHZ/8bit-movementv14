@@ -103,8 +103,8 @@ Enable **Isometric Perspective direction layout** in Module Settings when the wo
 
 - Manifest minimum and verified versions are Foundry VTT `13` and `14.367`
 - Updated from earlier v10-v13 forks
-- Smoke-tested locally on Foundry VTT `13.351` and `14.367`; the final v1.5.2
-  cross-machine check is pending
+- Smoke-tested on Foundry VTT `13.351` and `14.367`, including a cross-machine
+  v1.5.2 check on Foundry VTT `14.367`
 
 ## Development notes
 
@@ -119,10 +119,10 @@ Run the lightweight automated checks before committing:
 See [`docs/architecture.md`](docs/architecture.md) for current module boundaries
 and deliberately deferred refactor candidates.
 
-The automated suite does not emulate the complete Foundry/PIXI runtime. Before
-publishing, repeat the cross-machine smoke test for Token HUD and Token Config
-rendering, cardinal/diagonal movement, standard/isometric sprite layout, and the
-optional `libWrapper` rotation wrapper.
+The automated suite does not emulate the complete Foundry/PIXI runtime. For
+future releases, repeat the cross-machine smoke test for Token HUD and Token
+Config rendering, cardinal/diagonal movement, standard/isometric sprite layout,
+and the optional `libWrapper` rotation wrapper.
 
 ## Release helper
 
