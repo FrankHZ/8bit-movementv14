@@ -207,6 +207,7 @@ function appendDirectionalPreview(
   diagonalMode,
   isometric,
 ) {
+  body.classList.add("movement-hud-preview-body");
   const grid = document.createElement("div");
   grid.className = "movement-hud-direction-grid";
   grid.classList.toggle("isometric", isometric);
@@ -254,6 +255,7 @@ function appendSpriteSheetPreview(
   diagonalMode,
   isometric,
 ) {
+  body.classList.add("movement-hud-preview-body");
   const config = getSpriteSheetConfig(tokenDocument);
   const preview = createSpriteSheetPreview({
     compact: true,

@@ -10,6 +10,7 @@ Change Log for Token Movement 8-bit Style.
     -Removed duplicated English fallbacks and deferred setting localization until render time, matching Foundry v13's init-before-i18n lifecycle order.
     -Verified the manifest for Foundry v14.367 and made cropped sprite-sheet Tokens preserve Isometric Perspective's upright mesh transformation while retaining the existing standard-view layout.
     -Added a world-level Isometric Perspective mode that projects canvas movement into screen-space facings and presents both HUD previews as a spacious large diamond over one continuous background; moving southeast selects Down Right, while source preview positions remain unchanged.
+    -Unified standard and isometric HUD previews around the same unboxed, evenly spaced image treatment and removed the preview body's outer inset.
 
 1.5.1:
 

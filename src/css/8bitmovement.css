@@ -92,6 +92,10 @@
     padding: 9px;
 }
 
+#token-hud .movement-hud-body.movement-hud-preview-body {
+    padding: 0;
+}
+
 #token-hud .movement-hud-activation-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -130,29 +134,37 @@
 
 #token-hud .movement-hud-direction-grid {
     display: grid;
-    grid-template-columns: repeat(3, 44px);
-    grid-template-rows: repeat(3, 44px);
+    grid-template-columns: repeat(3, 64px);
+    grid-template-rows: repeat(3, 64px);
     justify-content: center;
-    gap: 4px;
+    gap: 0;
+    padding: 10px;
+    background:
+        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 0 0 / 12px 12px,
+        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 0 0 / 12px 12px,
+        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 6px -6px / 12px 12px,
+        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 6px 6px / 12px 12px,
+        #0b0d11;
 }
 
 #token-hud .movement-hud-direction {
     position: relative;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     min-width: 0;
     margin: 0;
     padding: 0;
-    overflow: hidden;
-    background: #0b0d11;
-    border: 1px solid rgb(255 255 255 / 18%);
-    border-radius: 5px;
+    place-self: center;
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
 }
 
 #token-hud .movement-hud-direction:hover,
 #token-hud .movement-hud-direction:focus-visible {
-    border-color: rgb(255 255 255 / 60%);
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 20%);
+    filter: drop-shadow(0 0 3px rgb(255 255 255 / 45%));
+    box-shadow: none;
 }
 
 #token-hud .movement-hud-direction:disabled {
@@ -166,7 +178,7 @@
     height: 100%;
     max-width: none;
     max-height: none;
-    object-fit: cover;
+    object-fit: contain;
     border: 0;
     image-rendering: pixelated;
 }
@@ -221,12 +233,15 @@
 
 #token-hud .movement-hud-grid-center {
     display: grid;
+    width: 48px;
+    height: 48px;
     grid-area: 2 / 2;
     place-items: center;
+    place-self: center;
     color: rgb(255 255 255 / 55%);
-    background: rgb(255 255 255 / 4%);
-    border: 1px dashed rgb(255 255 255 / 12%);
-    border-radius: 50%;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     font-size: 16px;
 }
 
@@ -407,36 +422,7 @@ button.movement-direction-preview {
 #token-hud .movement-hud-direction-grid.isometric {
     grid-template-columns: repeat(5, 41px);
     grid-template-rows: repeat(5, 41px);
-    gap: 0;
     padding: 6px;
-    background:
-        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 0 0 / 12px 12px,
-        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 0 0 / 12px 12px,
-        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 6px -6px / 12px 12px,
-        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 6px 6px / 12px 12px,
-        #0b0d11;
-    border-radius: 6px;
-}
-
-#token-hud .movement-hud-direction-grid.isometric .movement-hud-direction {
-    width: 48px;
-    height: 48px;
-    place-self: center;
-    overflow: visible;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-}
-
-#token-hud .movement-hud-direction-grid.isometric .movement-hud-direction:hover,
-#token-hud .movement-hud-direction-grid.isometric .movement-hud-direction:focus-visible {
-    border: 0;
-    filter: drop-shadow(0 0 3px rgb(255 255 255 / 45%));
-    box-shadow: none;
-}
-
-#token-hud .movement-hud-direction-grid.isometric .movement-hud-direction img {
-    object-fit: contain;
 }
 
 #token-hud .movement-hud-direction-grid.isometric .movement-hud-direction-glyph {
@@ -446,13 +432,7 @@ button.movement-direction-preview {
 }
 
 #token-hud .movement-hud-direction-grid.isometric .movement-hud-grid-center {
-    width: 48px;
-    height: 48px;
     grid-area: 3 / 3;
-    place-self: center;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
 }
 
 #token-hud .movement-hud-direction-grid.isometric [data-direction="up"] {
@@ -490,32 +470,7 @@ button.movement-direction-preview {
 #token-hud .movement-sprite-preview.compact .movement-direction-preview-grid.isometric {
     grid-template-columns: repeat(5, 41px);
     grid-template-rows: repeat(5, 41px);
-    gap: 0;
     padding: 6px;
-    background:
-        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 0 0 / 12px 12px,
-        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 0 0 / 12px 12px,
-        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 6px -6px / 12px 12px,
-        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 6px 6px / 12px 12px,
-        #0b0d11;
-    border-radius: 6px;
-}
-
-#token-hud .movement-sprite-preview.compact .movement-direction-preview-grid.isometric .movement-direction-preview {
-    width: 48px;
-    height: 48px;
-    place-self: center;
-    justify-content: center;
-    padding: 0;
-    overflow: visible;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-}
-
-#token-hud .movement-sprite-preview.compact .movement-direction-preview-grid.isometric .movement-frame-viewport {
-    background: transparent;
-    border-radius: 0;
 }
 
 #token-hud .movement-direction-preview-grid.isometric [data-direction="up"] {
@@ -570,22 +525,41 @@ button.movement-direction-preview {
 }
 
 #token-hud .movement-sprite-preview.compact .movement-direction-preview-grid {
-    grid-template-columns: repeat(3, 46px);
-    gap: 4px;
-    margin-top: 7px;
+    grid-template-columns: repeat(3, 64px);
+    grid-template-rows: repeat(3, 64px);
+    gap: 0;
+    margin-top: 0;
+    padding: 10px;
+    background:
+        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 0 0 / 12px 12px,
+        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 0 0 / 12px 12px,
+        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 6px -6px / 12px 12px,
+        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 6px 6px / 12px 12px,
+        #0b0d11;
 }
 
 #token-hud .movement-sprite-preview.compact .movement-direction-preview {
-    width: 46px;
-    padding: 3px;
+    width: 48px;
+    height: 48px;
+    place-self: center;
+    justify-content: center;
+    padding: 0;
+    overflow: visible;
     color: rgb(255 255 255 / 76%);
-    background: rgb(255 255 255 / 5%);
-    border-color: rgb(255 255 255 / 13%);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     font-size: 9px;
 }
 
 #token-hud .movement-sprite-preview.compact .movement-frame-viewport {
-    width: 38px;
+    width: 48px;
+    background: transparent;
+    border-radius: 0;
+}
+
+#token-hud .movement-hud-preview-body .movement-sprite-status:not([hidden]) {
+    margin: 9px;
 }
 
 .movement-settings {

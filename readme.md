@@ -83,7 +83,7 @@ Extract All workflow; a versioned ZIP may otherwise create a mismatched folder
 name that Foundry will not recognize.
 
 - **Token HUD mode** adds movement image controls to the token HUD. Its panel
-  can be collapsed to a compact title bar and reopened with the visibility toggle.
+  can be collapsed to a compact title bar and reopened with the visibility toggle. Both standard and isometric layouts place unboxed direction images over one continuous edge-to-edge preview background.
 - **Token Settings mode** adds the same movement image controls to the Token Config appearance tab.
 - **Use eight directions for this Token** enables the four diagonal directions
   for either separate images or a sprite sheet. It is stored per Token.

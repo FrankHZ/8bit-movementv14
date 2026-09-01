@@ -53,6 +53,7 @@ function createDirectionPreview(
   onActivate,
   showLabel,
   isometric,
+  compact,
 ) {
   const card = document.createElement(onActivate ? "button" : "div");
   if (onActivate) card.type = "button";
@@ -78,7 +79,7 @@ function createDirectionPreview(
     card.append(label);
   }
   if (onActivate) card.addEventListener("click", onActivate);
-  return { card, image, direction, isometric };
+  return { card, image, direction, compact };
 }
 
 function applyFramePreview(preview, result) {
@@ -86,7 +87,7 @@ function applyFramePreview(preview, result) {
   const cropY = result.sourceOffsetY + (row - 1) * result.frameHeight;
   const viewport = preview.image.parentElement;
   viewport.style.aspectRatio = `${result.frameWidth} / ${result.frameHeight}`;
-  if (preview.isometric) {
+  if (preview.compact) {
     const maximumSize = 48;
     const frameRatio = result.frameWidth / result.frameHeight;
     const width = frameRatio >= 1 ? maximumSize : maximumSize * frameRatio;
@@ -133,6 +134,7 @@ export function createSpriteSheetPreview({
       onActivate,
       showLabels,
       isometric,
+      compact,
     ),
   );
   grid.append(...previews.map(({ card }) => card));
