@@ -8,6 +8,7 @@ Change Log for Token Movement 8-bit Style.
     -Documented the current architecture and ranked future refactor candidates without adding a bundler, TypeScript, or a Foundry mock environment.
     -Added Simplified Chinese localization using Foundry's established `cn` language code, with an automated test for locale keys, values, and placeholders.
     -Removed duplicated English fallbacks and deferred setting localization until render time, matching Foundry v13's init-before-i18n lifecycle order.
+    -Verified the manifest for Foundry v14.367 and made cropped sprite-sheet Tokens preserve Isometric Perspective's upright mesh transformation while retaining the existing standard-view layout.
 
 1.5.1:
 

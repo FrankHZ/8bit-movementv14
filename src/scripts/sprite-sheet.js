@@ -8,10 +8,13 @@ import {
   cardinalizeSpriteSheetDirection,
   getSpriteSheetFrameRectangle,
   normalizeSpriteSheetDirection,
-  numberOr,
   validateSpriteSheetDimensions,
   withSpriteSheetDefaults,
 } from "./sprite-sheet/config.js";
+import {
+  applySpriteSheetFrame,
+  restoreSpriteSheetFrame,
+} from "./sprite-sheet/rendering.js";
 
 export {
   CARDINAL_SPRITE_DIRECTIONS,
@@ -140,23 +143,6 @@ export function getSpriteSheetFacing(tokenOrDocument) {
     : cardinalizeSpriteSheetDirection(facing);
 }
 
-function resizeMesh(token, frame, config) {
-  const scale = Math.max(0.01, numberOr(config.scale, 1));
-  const offsetX = numberOr(config.offsetX, 0);
-  const offsetY = numberOr(config.offsetY, 0);
-  const frameWidth = Math.max(1, frame.width);
-  const frameHeight = Math.max(1, frame.height);
-
-  token.mesh.scale.set(
-    (token.w / frameWidth) * scale,
-    (token.h / frameHeight) * scale,
-  );
-  token.mesh.position.set(
-    token.center.x + offsetX,
-    token.center.y + (token.h * (1 - scale)) / 2 + offsetY,
-  );
-}
-
 function requestKey(config, direction) {
   const facing = normalizeSpriteSheetDirection(direction);
   const row = config.directionRows[facing];
@@ -205,13 +191,13 @@ export async function applySpriteSheetDirection(token, direction) {
 
     if (!tokenStates.has(token.id)) {
       tokenStates.set(token.id, {
-        originalTexture: token.mesh.texture,
+        originalTokenTexture: token.texture,
+        originalMeshTexture: token.mesh.texture,
         originalScale: { x: token.mesh.scale.x, y: token.mesh.scale.y },
       });
     }
 
-    if (token.mesh.texture !== frame) token.mesh.texture = frame;
-    resizeMesh(token, frame, latest);
+    applySpriteSheetFrame(token, frame, latest);
   } catch (error) {
     restoreSpriteSheetToken(token);
     console.warn(
@@ -227,8 +213,14 @@ export function restoreSpriteSheetToken(token) {
   if (!state) return;
 
   tokenRequests.delete(token.id);
-  const originalTexture = token.texture ?? state.originalTexture;
-  if (originalTexture) token.mesh.texture = originalTexture;
+  const originalTexture =
+    state.originalTokenTexture ?? state.originalMeshTexture;
+  const renderMode = restoreSpriteSheetFrame(token, originalTexture);
+
+  if (renderMode === "isometric") {
+    tokenStates.delete(token.id);
+    return;
+  }
 
   const textureWidth = originalTexture?.width ?? 0;
   const textureHeight = originalTexture?.height ?? 0;

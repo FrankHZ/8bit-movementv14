@@ -12,14 +12,17 @@ boundaries.
 2. `src/scripts/sprite-sheet/config.js` owns sprite-sheet direction metadata,
    default merging, input validation, and first-frame rectangle calculations.
    It has no PIXI or Token dependency, so it is the primary unit-test boundary.
-3. `src/scripts/sprite-sheet.js` is both the sprite-sheet runtime and the stable
+3. `src/scripts/sprite-sheet/rendering.js` keeps cropped Token textures aligned
+   with their meshes and chooses between standard layout and the mesh layout
+   owned by an active Isometric Perspective Scene.
+4. `src/scripts/sprite-sheet.js` is both the sprite-sheet runtime and the stable
    public facade. It re-exports the config API and owns texture loading, PIXI
    frame caching, Token mesh updates, and render hooks.
-4. `src/scripts/functions.js` coordinates directional-image setup, persistence,
+5. `src/scripts/functions.js` coordinates directional-image setup, persistence,
    and movement updates across both image modes.
-5. `src/scripts/ui.js` is the stable UI facade. Files under `src/scripts/ui/`
+6. `src/scripts/ui.js` is the stable UI facade. Files under `src/scripts/ui/`
    own the Token HUD, Token Config, previews, shared form data, and DOM helpers.
-6. `src/scripts/main.js` remains the composition root that registers settings,
+7. `src/scripts/main.js` remains the composition root that registers settings,
    hooks, UI integration, and the optional `libWrapper` behavior.
 
 Existing imports should continue through `sprite-sheet.js` or `ui.js` unless a
@@ -30,10 +33,11 @@ splits from forcing broad import rewrites.
 
 The automated suite uses Node's built-in test runner. It covers deterministic
 logic that can run without Foundry, including defaults, direction fallback,
-row mapping, source offsets, bounds validation, frame rectangles, and facade
-exports. `npm run check` also syntax-checks every source script, parses key JSON
-files, verifies that package and manifest versions match, and requires every
-locale to contain exactly the same keys as `lang/en.json`.
+row mapping, source offsets, bounds validation, frame rectangles, facade
+exports, and focused standard/isometric mesh-layout mocks. `npm run check` also
+syntax-checks every source script, parses key JSON files, verifies that package
+and manifest versions match, and requires every locale to contain exactly the
+same keys as `lang/en.json`.
 
 Foundry hooks, PIXI textures, Token documents, and application rendering stay in
 the manual test checklist. Mocking the whole Foundry runtime would add more

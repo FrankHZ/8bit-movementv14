@@ -9,6 +9,7 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - `src/scripts/settings.js`: module setting definitions.
 - `src/scripts/functions.js`: directional texture setup, movement update hooks, preview/persist logic.
 - `src/scripts/sprite-sheet/config.js`: pure row mapping, defaults, validation, and frame-rectangle calculations.
+- `src/scripts/sprite-sheet/rendering.js`: standard and isometric Token mesh layout compatibility.
 - `src/scripts/sprite-sheet.js`: stable sprite-sheet facade plus texture caching and Token render hooks.
 - `src/scripts/ui.js`: public UI facade.
 - `src/scripts/ui/`: Token HUD, Token Config, sprite previews, DOM helpers, and shared UI data.
@@ -32,12 +33,13 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - Token Config field edits should use `{ render: false }`; rebuild only the module fieldset when its structure changes.
 - Keep every locale file's keys aligned with `src/lang/en.json`; `npm run check` enforces exact key parity.
 - Foundry v13 fires module `init` before `game.i18n.initialize()`. Register setting `name` and `hint` values as localization keys; do not eagerly call `game.i18n.localize()` or `format()` during `init`.
+- Keep `token.texture` aligned with cropped `token.mesh.texture` frames. In an active `isometric-perspective` Scene, let that module own mesh scale and position and request a mesh refresh after changing frames.
 - Do not commit generated zip files unless the task is explicitly about packaging a release.
 
 ## Versioning and Local Release
 
 - The current development release is `1.5.2`.
-- The v1.5.2 manifest uses Foundry `minimum: 13` and `verified: 13.351`; v14 support is intended but not presently verified.
+- The v1.5.2 manifest uses Foundry `minimum: 13` and `verified: 14.367`.
 - Keep `package.json` and `src/module.json` versions identical.
 - Record this patch cycle under the `1.5.2` CHANGELOG entry.
 - `src/` is canonical. Run `npm run release:package` to generate the unpacked module, the version-free manual-install zip, and the versioned release zip under `release/`.
@@ -79,6 +81,7 @@ Manual Foundry checks are still important:
 - Test cardinal and diagonal movement texture swaps, including missing diagonal-image fallbacks.
 - Test source frame size, crop offsets, repeated direction rows, and out-of-bounds validation.
 - Confirm sprite previews and rendered Tokens use the first frame from every configured row.
+- Confirm sprite-sheet Tokens remain upright in an Isometric Perspective Scene and retain normal scale/offset behavior in a standard Scene.
 - Collapse and reopen the HUD panel, then confirm its state survives a HUD re-render.
 - Test locking/unlocking movement settings.
 - Test Save to Prototype, Clear Token, and Clear All independently.
