@@ -25,16 +25,16 @@ test("isometric projection places source directions on screen", () => {
   }
 });
 
-test("isometric canvas axes select the matching source art", () => {
+test("isometric canvas axes select their screen-space source direction", () => {
   const expected = {
-    down: "right",
-    right: "up",
-    up: "left",
-    left: "down",
-    "down-right": "up-right",
-    "up-right": "up-left",
-    "up-left": "down-left",
-    "down-left": "down-right",
+    down: "down-right",
+    right: "up-right",
+    up: "up-left",
+    left: "down-left",
+    "down-right": "right",
+    "up-right": "up",
+    "up-left": "left",
+    "down-left": "down",
   };
 
   for (const [canvasDirection, sourceDirection] of Object.entries(expected)) {

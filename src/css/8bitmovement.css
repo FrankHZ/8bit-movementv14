@@ -405,18 +405,38 @@ button.movement-direction-preview {
 }
 
 #token-hud .movement-hud-direction-grid.isometric {
-    grid-template-columns: repeat(5, 29px);
-    grid-template-rows: repeat(5, 29px);
+    grid-template-columns: repeat(5, 41px);
+    grid-template-rows: repeat(5, 41px);
     gap: 0;
-    padding: 28px 0;
+    padding: 6px;
+    background:
+        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 0 0 / 12px 12px,
+        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 0 0 / 12px 12px,
+        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 6px -6px / 12px 12px,
+        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 6px 6px / 12px 12px,
+        #0b0d11;
+    border-radius: 6px;
 }
 
 #token-hud .movement-hud-direction-grid.isometric .movement-hud-direction {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     place-self: center;
-    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    overflow: visible;
+    background: transparent;
+    border: 0;
     border-radius: 0;
+}
+
+#token-hud .movement-hud-direction-grid.isometric .movement-hud-direction:hover,
+#token-hud .movement-hud-direction-grid.isometric .movement-hud-direction:focus-visible {
+    border: 0;
+    filter: drop-shadow(0 0 3px rgb(255 255 255 / 45%));
+    box-shadow: none;
+}
+
+#token-hud .movement-hud-direction-grid.isometric .movement-hud-direction img {
+    object-fit: contain;
 }
 
 #token-hud .movement-hud-direction-grid.isometric .movement-hud-direction-glyph {
@@ -426,11 +446,12 @@ button.movement-direction-preview {
 }
 
 #token-hud .movement-hud-direction-grid.isometric .movement-hud-grid-center {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     grid-area: 3 / 3;
     place-self: center;
-    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    background: transparent;
+    border: 0;
     border-radius: 0;
 }
 
@@ -467,20 +488,33 @@ button.movement-direction-preview {
 }
 
 #token-hud .movement-sprite-preview.compact .movement-direction-preview-grid.isometric {
-    grid-template-columns: repeat(5, 29px);
-    grid-template-rows: repeat(5, 29px);
+    grid-template-columns: repeat(5, 41px);
+    grid-template-rows: repeat(5, 41px);
     gap: 0;
-    padding: 28px 0;
+    padding: 6px;
+    background:
+        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 0 0 / 12px 12px,
+        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 0 0 / 12px 12px,
+        linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 3%) 75%) 6px -6px / 12px 12px,
+        linear-gradient(45deg, rgb(255 255 255 / 3%) 25%, transparent 25%) 6px 6px / 12px 12px,
+        #0b0d11;
+    border-radius: 6px;
 }
 
 #token-hud .movement-sprite-preview.compact .movement-direction-preview-grid.isometric .movement-direction-preview {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     place-self: center;
     justify-content: center;
-    padding: 4px;
-    overflow: hidden;
-    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+#token-hud .movement-sprite-preview.compact .movement-direction-preview-grid.isometric .movement-frame-viewport {
+    background: transparent;
     border-radius: 0;
 }
 

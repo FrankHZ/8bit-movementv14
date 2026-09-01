@@ -16,14 +16,14 @@ const ISOMETRIC_SCREEN_DIRECTIONS = Object.freeze({
 });
 
 const ISOMETRIC_SOURCE_DIRECTIONS_BY_CANVAS = Object.freeze({
-  down: "right",
-  right: "up",
-  up: "left",
-  left: "down",
-  "down-right": "up-right",
-  "up-right": "up-left",
-  "up-left": "down-left",
-  "down-left": "down-right",
+  down: "down-right",
+  right: "up-right",
+  up: "up-left",
+  left: "down-left",
+  "down-right": "right",
+  "up-right": "up",
+  "up-left": "left",
+  "down-left": "down",
 });
 
 export function getIsometricPerspectiveMode(gameInstance = globalThis.game) {
@@ -43,7 +43,7 @@ export function projectDirectionToScreen(direction, isometric = false) {
   return ISOMETRIC_SCREEN_DIRECTIONS[direction] ?? direction;
 }
 
-/** Map Foundry canvas movement axes back to source-art directions. */
+/** Project Foundry canvas movement axes into screen-space source directions. */
 export function mapCanvasDirectionToSource(direction, isometric = false) {
   if (!isometric) return direction;
   return ISOMETRIC_SOURCE_DIRECTIONS_BY_CANVAS[direction] ?? direction;
