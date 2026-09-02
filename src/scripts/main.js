@@ -1,11 +1,13 @@
 import { registerSettings } from "./settings.js";
 import { addListener } from "./functions.js";
 import { MODULE_NAME } from "./constants.js";
+import { registerDirectionalImageHooks } from "./directional-images.js";
 import { registerSpriteSheetHooks } from "./sprite-sheet.js";
 import { createConfigButtons, createHudButtons } from "./ui.js";
 
 Hooks.on("init", () => {
   registerSettings();
+  registerDirectionalImageHooks();
   registerSpriteSheetHooks();
 });
 

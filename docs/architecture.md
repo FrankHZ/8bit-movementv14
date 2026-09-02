@@ -10,20 +10,24 @@ boundaries.
 1. `src/scripts/constants.js` owns the module ID, image-mode constants, the
    compatibility fallback for diagonal mode, source-to-screen isometric
    HUD projection, and canvas-axis-to-screen-facing movement projection.
-2. `src/scripts/sprite-sheet/config.js` owns sprite-sheet direction metadata,
+2. `src/scripts/directional-images.js` owns separate-image facing state, cached
+   texture loading, stale-request rejection, client-side Token/mesh updates, and
+   canvas lifecycle hooks. Movement writes only the facing flag; it never queues
+   a later Token texture document update.
+3. `src/scripts/sprite-sheet/config.js` owns sprite-sheet direction metadata,
    default merging, input validation, and first-frame rectangle calculations.
    It has no PIXI or Token dependency, so it is the primary unit-test boundary.
-3. `src/scripts/sprite-sheet/rendering.js` keeps cropped Token textures aligned
+4. `src/scripts/sprite-sheet/rendering.js` keeps cropped Token textures aligned
    with their meshes and chooses between standard layout and the mesh layout
    owned by an active Isometric Perspective Scene.
-4. `src/scripts/sprite-sheet.js` is both the sprite-sheet runtime and the stable
+5. `src/scripts/sprite-sheet.js` is both the sprite-sheet runtime and the stable
    public facade. It re-exports the config API and owns texture loading, PIXI
    frame caching, Token mesh updates, and render hooks.
-5. `src/scripts/functions.js` coordinates directional-image setup, persistence,
+6. `src/scripts/functions.js` coordinates directional-image setup, facing,
    and movement updates across both image modes.
-6. `src/scripts/ui.js` is the stable UI facade. Files under `src/scripts/ui/`
+7. `src/scripts/ui.js` is the stable UI facade. Files under `src/scripts/ui/`
    own the Token HUD, Token Config, previews, shared form data, and DOM helpers.
-7. `src/scripts/main.js` remains the composition root that registers settings,
+8. `src/scripts/main.js` remains the composition root that registers settings,
    hooks, UI integration, and the optional `libWrapper` behavior.
 
 Existing imports should continue through `sprite-sheet.js` or `ui.js` unless a
@@ -34,9 +38,10 @@ splits from forcing broad import rewrites.
 
 The automated suite uses Node's built-in test runner. It covers deterministic
 logic that can run without Foundry, including defaults, direction fallback,
-row mapping, source offsets, bounds validation, frame rectangles, isometric
-direction projection, facade exports, and focused standard/isometric mesh-layout
-mocks. `npm run check` also
+row mapping, source offsets, bounds validation, frame rectangles, separate-image
+facing changes, texture caching and stale-request rejection, isometric direction
+projection, facade exports, and focused standard/isometric mesh-layout mocks.
+`npm run check` also
 syntax-checks every source script, parses key JSON files, verifies that package
 and manifest versions match, and requires every locale to contain exactly the
 same keys as `lang/en.json`.
