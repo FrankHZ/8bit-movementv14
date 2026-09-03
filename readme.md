@@ -2,13 +2,14 @@
 
 `8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
-This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. The current v1.5.3 release supports v13 and is verified for Foundry VTT `14.367`.
+This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. The local v1.5.4 development manifest supports v13 and is verified for Foundry VTT `14.367`. The latest published release is v1.5.3.
 
 ## Features
 
 - Set directional token images from the Token HUD
 - Configure the same images from Token Config
 - Auto-detect direction suffixes in filenames during setup
+- Loop per-direction video assets independently for each Token
 - Per-Token four/eight-direction switching in both image modes
 - Single-character RPG Maker sprite-sheet mode with configurable frame size
 - Save directional settings back to the actor's prototype token
@@ -71,6 +72,13 @@ textures are preloaded and cached, movement synchronizes only a lightweight
 facing flag, and the Token document's texture path is not rewritten after the
 movement completes. This avoids a delayed mesh resize interrupting an active
 mouse drag.
+
+Separate-image mode also accepts Foundry's `.webm`, `.mp4`, `.m4v`, and `.ogv`
+video formats. Each Token receives an independent muted video texture which
+loops from the beginning when that direction becomes active. WebM is the
+recommended format, especially when transparency is required. GIF and animated
+WebP files remain image textures and are not supported as animated Token art;
+their HUD preview may animate even when the canvas texture displays one frame.
 
 ## Setup
 
@@ -164,7 +172,7 @@ This repo also includes a small helper for Foundry's Package Release API.
    npm run release:publish
    ```
 
-Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.3`. The API payload uses that tag for the version-specific manifest URL.
+Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.4`. The API payload uses that tag for the version-specific manifest URL.
 
 ## Credits
 

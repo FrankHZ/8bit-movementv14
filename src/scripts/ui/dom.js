@@ -1,3 +1,24 @@
+import { isVideoSource } from "../directional-images.js";
+
+export function createMediaPreview(src, title) {
+  if (isVideoSource(src)) {
+    const video = document.createElement("video");
+    video.src = src;
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "auto";
+    video.setAttribute("aria-label", title);
+    return video;
+  }
+
+  const image = document.createElement("img");
+  image.src = src;
+  image.alt = title;
+  return image;
+}
+
 export function createFormGroup(fieldset, labelText, inputId) {
   const group = document.createElement("div");
   group.className = "form-group movement-form-group";
@@ -124,15 +145,15 @@ export function createImagePickerField({
   previewButton.title = title;
   previewButton.setAttribute("aria-label", title);
 
-  const previewImage = document.createElement("img");
-  previewImage.src = src;
-  previewImage.alt = title;
-  previewButton.append(previewImage);
+  let previewMedia = createMediaPreview(src, title);
+  previewButton.append(previewMedia);
   previewButton.addEventListener("click", () => picker.button?.click());
   picker.addEventListener("change", async (event) => {
     const selectedPath = String(event.currentTarget.value ?? "").trim();
     if (!selectedPath) return;
-    previewImage.src = selectedPath;
+    const nextPreview = createMediaPreview(selectedPath, title);
+    previewMedia.replaceWith(nextPreview);
+    previewMedia = nextPreview;
     await onSelect(selectedPath);
   });
 

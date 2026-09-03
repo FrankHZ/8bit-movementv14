@@ -11,9 +11,10 @@ boundaries.
    compatibility fallback for diagonal mode, source-to-screen isometric
    HUD projection, and canvas-axis-to-screen-facing movement projection.
 2. `src/scripts/directional-images.js` owns separate-image facing state, cached
-   texture loading, stale-request rejection, client-side Token/mesh updates, and
-   canvas lifecycle hooks. Movement writes only the facing flag; it never queues
-   a later Token texture document update.
+   texture loading, per-Token video cloning and playback, stale-request
+   rejection, client-side Token/mesh updates, and canvas lifecycle hooks.
+   Movement writes only the facing flag; it never queues a later Token texture
+   document update.
 3. `src/scripts/sprite-sheet/config.js` owns sprite-sheet direction metadata,
    default merging, input validation, and first-frame rectangle calculations.
    It has no PIXI or Token dependency, so it is the primary unit-test boundary.
@@ -39,8 +40,9 @@ splits from forcing broad import rewrites.
 The automated suite uses Node's built-in test runner. It covers deterministic
 logic that can run without Foundry, including defaults, direction fallback,
 row mapping, source offsets, bounds validation, frame rectangles, separate-image
-facing changes, texture caching and stale-request rejection, isometric direction
-projection, facade exports, and focused standard/isometric mesh-layout mocks.
+facing changes, static/video texture caching, video lifecycle behavior,
+stale-request rejection, isometric direction projection, facade exports, and
+focused standard/isometric mesh-layout mocks.
 `npm run check` also
 syntax-checks every source script, parses key JSON files, verifies that package
 and manifest versions match, and requires every locale to contain exactly the

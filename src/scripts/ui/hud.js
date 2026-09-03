@@ -22,6 +22,7 @@ import {
   localize,
 } from "./shared.js";
 import { createSpriteSheetPreview } from "./sprite-preview.js";
+import { createMediaPreview } from "./dom.js";
 
 const DIRECTION_META = Object.freeze({
   up: { direction: "up" },
@@ -183,9 +184,7 @@ function createDirectionButton(
   button.setAttribute("aria-label", title);
   button.disabled = locked;
 
-  const image = document.createElement("img");
-  image.src = src;
-  image.alt = title;
+  const image = createMediaPreview(src, title);
   const glyph = document.createElement("span");
   glyph.className = "movement-hud-direction-glyph";
   glyph.textContent = DIRECTION_GLYPHS[screenDirection];

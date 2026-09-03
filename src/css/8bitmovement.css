@@ -173,7 +173,7 @@
     opacity: 0.72;
 }
 
-#token-hud .movement-hud-direction img {
+#token-hud .movement-hud-direction :is(img, video) {
     width: 100%;
     height: 100%;
     max-width: none;
@@ -600,7 +600,7 @@ button.movement-direction-preview {
     flex: 1 1 auto;
 }
 
-.movement-preview-button img {
+.movement-preview-button :is(img, video) {
     width: 50px;
     height: 50px;
     object-fit: cover;
@@ -608,7 +608,7 @@ button.movement-direction-preview {
 .movement-preview-button[id*="sprite-sheet"] img {
     object-fit: contain;
 }
-.movement-preview-button img:hover{
+.movement-preview-button :is(img, video):hover{
     border: none;
 }
 
