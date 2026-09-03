@@ -109,8 +109,8 @@ Enable **Isometric Perspective direction layout** in Module Settings when the wo
 
 - Manifest minimum and verified versions are Foundry VTT `13` and `14.367`
 - Updated from earlier v10-v13 forks
-- Smoke-tested on Foundry VTT `13.351` and `14.367`, including a cross-machine
-  v1.5.2 check on Foundry VTT `14.367`
+- Smoke-tested on Foundry VTT `13.351` and `14.367`, including the v1.5.3
+  separate-image movement fix on Foundry VTT `14.367`
 
 ## Development notes
 
