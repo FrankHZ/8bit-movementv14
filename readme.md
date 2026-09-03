@@ -2,7 +2,7 @@
 
 `8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
-This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. The local v1.5.3 development manifest supports v13 and is verified for Foundry VTT `14.367`. The latest published release is v1.5.2.
+This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. The current v1.5.3 release supports v13 and is verified for Foundry VTT `14.367`.
 
 ## Features
 
@@ -79,7 +79,7 @@ Enable the module in a world, then configure the module settings from Foundry's 
 For manual installation, use this manifest URL:
 
 ```text
-https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.2/src/module.json
+https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.3/src/module.json
 ```
 
 When installing a downloaded ZIP manually, the final directory must be named
