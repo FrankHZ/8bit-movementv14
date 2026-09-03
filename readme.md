@@ -2,7 +2,7 @@
 
 `8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
-This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. The v1.5.2 manifest supports v13 and is verified for Foundry VTT `14.367`. The latest published release is v1.5.2.
+This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. The local v1.5.3 development manifest supports v13 and is verified for Foundry VTT `14.367`. The latest published release is v1.5.2.
 
 ## Features
 
@@ -66,6 +66,12 @@ module currently displays only the first frame in each row; it does not yet
 play the walk animation. The current facing is stored in Token flags, while the
 Token document's texture path is not rewritten on each move.
 
+Separate directional images use the same facing-state approach. Directional
+textures are preloaded and cached, movement synchronizes only a lightweight
+facing flag, and the Token document's texture path is not rewritten after the
+movement completes. This avoids a delayed mesh resize interrupting an active
+mouse drag.
+
 ## Setup
 
 Enable the module in a world, then configure the module settings from Foundry's Configure Settings dialog.
@@ -103,8 +109,8 @@ Enable **Isometric Perspective direction layout** in Module Settings when the wo
 
 - Manifest minimum and verified versions are Foundry VTT `13` and `14.367`
 - Updated from earlier v10-v13 forks
-- Smoke-tested on Foundry VTT `13.351` and `14.367`, including a cross-machine
-  v1.5.2 check on Foundry VTT `14.367`
+- Smoke-tested on Foundry VTT `13.351` and `14.367`, including the v1.5.3
+  separate-image movement fix on Foundry VTT `14.367`
 
 ## Development notes
 
@@ -158,7 +164,7 @@ This repo also includes a small helper for Foundry's Package Release API.
    npm run release:publish
    ```
 
-Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.2`. The API payload uses that tag for the version-specific manifest URL.
+Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.3`. The API payload uses that tag for the version-specific manifest URL.
 
 ## Credits
 

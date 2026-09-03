@@ -1,5 +1,11 @@
 Change Log for Token Movement 8-bit Style.
 
+1.5.3:
+
+    -Fixed GitHub issue #5 by removing the delayed separate-image `texture.src` document update that resized Tokens and interrupted active mouse movement.
+    -Separate-image movement now synchronizes a lightweight facing flag while cached client-side rendering updates Token and mesh textures without a second document update.
+    -Preloaded directional textures, rejected stale asynchronous swaps during rapid direction changes, and restored the document texture when movement settings are cleared.
+
 1.5.2:
 
     -Separated deterministic sprite-sheet configuration and crop calculations from Foundry/PIXI runtime behavior while keeping the existing sprite-sheet import facade compatible.

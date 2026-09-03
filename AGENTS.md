@@ -7,7 +7,8 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - `src/module.json`: Foundry module manifest.
 - `src/scripts/main.js`: module hooks, settings registration, and optional `libWrapper` registration.
 - `src/scripts/settings.js`: module setting definitions.
-- `src/scripts/functions.js`: directional texture setup, movement update hooks, preview/persist logic.
+- `src/scripts/functions.js`: directional setup and movement-facing coordination across both image modes.
+- `src/scripts/directional-images.js`: separate-image facing state, texture caching, client-side rendering, and lifecycle hooks.
 - `src/scripts/sprite-sheet/config.js`: pure row mapping, defaults, validation, and frame-rectangle calculations.
 - `src/scripts/sprite-sheet/rendering.js`: standard and isometric Token mesh layout compatibility.
 - `src/scripts/sprite-sheet.js`: stable sprite-sheet facade plus texture caching and Token render hooks.
@@ -35,16 +36,17 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - Keep every locale file's keys aligned with `src/lang/en.json`; `npm run check` enforces exact key parity.
 - Foundry v13 fires module `init` before `game.i18n.initialize()`. Register setting `name` and `hint` values as localization keys; do not eagerly call `game.i18n.localize()` or `format()` during `init`.
 - Keep `token.texture` aligned with cropped `token.mesh.texture` frames. In an active `isometric-perspective` Scene, let that module own mesh scale and position and request a mesh refresh after changing frames.
+- Separate-image movement must synchronize only `flags.<module>.facing`; do not reintroduce a delayed `texture.src` document update. Directional textures are preloaded and applied to both `token.texture` and `token.mesh.texture` on each client.
 - Do not commit generated zip files unless the task is explicitly about packaging a release.
 
 ## Versioning and Local Release
 
-- The current development release is `1.5.2`.
-- The latest published release is `1.5.2`; README's install manifest URL should
-  remain pinned to the matching immutable tag.
-- The v1.5.2 manifest uses Foundry `minimum: 13` and `verified: 14.367`.
+- The current development release is `1.5.3`.
+- The latest published release is `1.5.2`. Keep README's install manifest URL
+  pinned to v1.5.2 until the v1.5.3 tag and GitHub release actually exist.
+- The v1.5.3 manifest uses Foundry `minimum: 13` and `verified: 14.367`.
 - Keep `package.json` and `src/module.json` versions identical.
-- Record this patch cycle under the `1.5.2` CHANGELOG entry.
+- Record this patch cycle under the `1.5.3` CHANGELOG entry.
 - `src/` is canonical. Run `npm run release:package` to generate the unpacked module, the version-free manual-install zip, and the versioned release zip under `release/`.
 - Once requested local work is complete and relevant checks pass, create a local commit without waiting for a separate commit instruction.
 - Local packaging or linking does not authorize pushing tags, publishing a GitHub release, or calling Foundry's release API.
@@ -82,6 +84,7 @@ Manual Foundry checks are still important:
 - Open Token HUD and Token Config on a token with and without module flags.
 - Toggle four/eight directions per Token in both separate-image and sprite-sheet modes.
 - Test cardinal and diagonal movement texture swaps, including missing diagonal-image fallbacks.
+- Repeatedly drag a separate-image Token through short moves and direction changes; different image files and dimensions must not resize late, complete the drag, or release Token control.
 - Test source frame size, crop offsets, repeated direction rows, and out-of-bounds validation.
 - Confirm sprite previews and rendered Tokens use the first frame from every configured row.
 - Confirm sprite-sheet Tokens remain upright in an Isometric Perspective Scene and retain normal scale/offset behavior in a standard Scene.

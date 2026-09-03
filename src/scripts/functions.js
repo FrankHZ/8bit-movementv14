@@ -7,6 +7,12 @@ import {
   SPRITE_SHEET_MODE,
 } from "./constants.js";
 import {
+  applyDirectionalImage,
+  getDirectionalFacing,
+  preloadDirectionalImages,
+  stageDirectionalFacing,
+} from "./directional-images.js";
+import {
   applySpriteSheetDirection,
   getSpriteSheetFacing,
   isSpriteSheetMode,
@@ -15,48 +21,6 @@ import {
 } from "./sprite-sheet.js";
 
 export { MODULE_NAME };
-
-const __8bitPersistTimers = new Map();
-
-const IMAGE_FLAG_BY_DIRECTION = Object.freeze({
-  up: "up",
-  down: "down",
-  left: "left",
-  right: "right",
-  "up-left": "UL",
-  "up-right": "UR",
-  "down-left": "DL",
-  "down-right": "DR",
-});
-
-function __8bit_forceOpaque(placeable) {
-  try {
-    if (!placeable) return;
-    placeable.alpha = 1;
-    if (placeable.icon) placeable.icon.alpha = 1;
-    if (placeable.mesh) placeable.mesh.alpha = 1;
-  } catch (e) {
-    console.warn("8bit-movement: forceOpaque failed", e);
-  }
-}
-
-/** Preview a texture on the canvas token without writing to the Token document. */
-function __8bit_previewMesh(tokenId, src) {
-  try {
-    const pl = canvas?.tokens?.get(tokenId);
-    if (!pl || !src) return;
-    const tex =
-      typeof PIXI !== "undefined" && PIXI.Texture
-        ? PIXI.Texture.from(src)
-        : null;
-    if (!tex) return;
-    if (pl.mesh) pl.mesh.texture = tex;
-    else if (pl.icon) pl.icon.texture = tex;
-    __8bit_forceOpaque(pl);
-  } catch {
-    // Preview failures are non-fatal; the persisted document update still runs.
-  }
-}
 
 /**
  * Initialize directional image flags from the token's current texture.
@@ -91,7 +55,11 @@ export async function initializeMovement(tokenId, { render = true } = {}) {
     "RIGHT",
   ];
   const hasDirection = directions.find((d) => imagePath.includes(d));
-  const isLowerCase = directions.indexOf(hasDirection) < 4;
+  const matchedDirectionIndex = directions.indexOf(hasDirection);
+  const isLowerCase = matchedDirectionIndex < 4;
+  const initialFacing = hasExistingConfig
+    ? getDirectionalFacing(token.document)
+    : ["up", "down", "left", "right"][matchedDirectionIndex % 4] ?? "down";
   directions = isLowerCase
     ? directions
     : directions.map((d) => d.toUpperCase());
@@ -108,7 +76,9 @@ export async function initializeMovement(tokenId, { render = true } = {}) {
     [`flags.${MODULE_NAME}.right`]: sourceFor(3),
     [`flags.${MODULE_NAME}.mode`]: DIRECTIONAL_IMAGE_MODE,
     [`flags.${MODULE_NAME}.diagonalMode`]: diagonalMode,
+    [`flags.${MODULE_NAME}.facing`]: initialFacing,
     [`flags.${MODULE_NAME}.-=spriteSheet`]: null,
+    [`flags.${MODULE_NAME}.-=__nextTexture`]: null,
     lockRotation: true,
     rotation: 1,
   };
@@ -119,6 +89,8 @@ export async function initializeMovement(tokenId, { render = true } = {}) {
     update[`flags.${MODULE_NAME}.DR`] = sourceFor(11);
   }
   await token.document.update(update, { render });
+  await preloadDirectionalImages(token.document);
+  await applyDirectionalImage(token, initialFacing);
 }
 
 /**
@@ -180,6 +152,8 @@ export async function imageLoader(tokenId, sheet, direction) {
         { [`flags.${MODULE_NAME}.${direction}`]: path },
         { render: false },
       );
+      await preloadDirectionalImages(token.document);
+      await applyDirectionalImage(token, getDirectionalFacing(token.document));
       sheet.render();
     },
   });
@@ -242,34 +216,16 @@ function setSpriteSheetFacing(token, change, direction) {
 }
 
 function setDirectionalTexture(token, change, direction) {
-  const flag = IMAGE_FLAG_BY_DIRECTION[direction];
-  let src = flag ? token.getFlag(MODULE_NAME, flag) : null;
-  if (!src && direction.startsWith("up-")) {
-    src = token.getFlag(MODULE_NAME, "up");
-  } else if (!src && direction.startsWith("down-")) {
-    src = token.getFlag(MODULE_NAME, "down");
+  const facing = stageDirectionalFacing(token, change, direction);
+  if (facing) {
+    void applyDirectionalImage(canvas?.tokens?.get(token.id), facing);
   }
-  if (!src || token.texture.src === src) return;
-
-  foundry.utils.setProperty(
-    change,
-    `flags.${MODULE_NAME}.__nextTexture`,
-    src,
-  );
-  __8bit_previewMesh(token.id, src);
 }
 
 /**
- * Register token update listeners that preview and persist directional textures.
+ * Register the movement listener that synchronizes facing flags.
  */
 export async function addListener() {
-  Hooks.on("refreshToken", (pl) => {
-    try {
-      if (isSpriteSheetMode(pl)) return;
-      const next = pl?.document?.getFlag(MODULE_NAME, "__nextTexture");
-      if (next) __8bit_previewMesh(pl.id, next);
-    } catch {}
-  });
   Hooks.on("preUpdateToken", function changeImage(token, change) {
     if (!token.flags[MODULE_NAME]) return;
     const spriteSheetMode = isSpriteSheetMode(token);
@@ -309,56 +265,3 @@ export async function addListener() {
     }
   });
 }
-
-// Persist previewed textures after movement begins so animated token movement stays smooth.
-Hooks.on("updateToken", async (doc, changes) => {
-  try {
-    const token = canvas?.tokens?.get(doc.id);
-    if (!token) return;
-    if (isSpriteSheetMode(doc)) return;
-
-    // Transient flag set by preUpdateToken.
-    const next =
-      (changes?.flags &&
-        changes.flags[MODULE_NAME] &&
-        changes.flags[MODULE_NAME].__nextTexture) ||
-      doc.getFlag(MODULE_NAME, "__nextTexture");
-
-    // Debounce persistence until movement settles to avoid jumps on drawn paths.
-    if (next || "x" in changes || "y" in changes) {
-      const prev = __8bitPersistTimers.get(doc.id);
-      if (prev) clearTimeout(prev);
-      const handle = setTimeout(async () => {
-        try {
-          const pending = doc.getFlag(MODULE_NAME, "__nextTexture");
-          if (pending) {
-            await doc.update(
-              {
-                "texture.src": pending,
-                [`flags.${MODULE_NAME}.-=__nextTexture`]: null,
-              },
-              { animate: false },
-            );
-          }
-          const tk = canvas?.tokens?.get(doc.id);
-          if (tk) {
-            const kicks = [0, 48, 120, 240];
-            for (const t of kicks) setTimeout(() => __8bit_forceOpaque(tk), t);
-          }
-        } catch {}
-        __8bitPersistTimers.delete(doc.id);
-      }, 800);
-      __8bitPersistTimers.set(doc.id, handle);
-    }
-
-    // Keep opacity solid during movement and texture swaps.
-    const movedNow = "x" in changes || "y" in changes;
-    const swapped = !!next || (changes?.texture && "src" in changes.texture);
-    if (movedNow || swapped) {
-      const kicks = [0, 48, 120, 240];
-      for (const t of kicks) setTimeout(() => __8bit_forceOpaque(token), t);
-    }
-  } catch (e) {
-    console.warn("8bit-movement: post-update handler failed", e);
-  }
-});
