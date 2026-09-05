@@ -6,6 +6,7 @@ import {
   mapCanvasDirectionToSource,
   projectDirectionToScreen,
 } from "../src/scripts/constants.js";
+import { resolveMovementFacing } from "../src/scripts/functions.js";
 
 test("isometric projection places source directions on screen", () => {
   const expected = {
@@ -65,4 +66,26 @@ test("isometric perspective is a safe world-setting lookup", () => {
     ["8bit-movement-frankhz", "isometricPerspective"],
   ]);
   assert.equal(getIsometricPerspectiveMode(undefined), false);
+});
+
+test("four-way isometric movement preserves all four projected facings", () => {
+  globalThis.foundry = {
+    utils: {
+      hasProperty(object, key) {
+        return Object.hasOwn(object, key);
+      },
+    },
+  };
+  const token = { x: 0, y: 0 };
+  const expected = [
+    [{ x: -100, y: -100 }, "left"],
+    [{ x: 100, y: -100 }, "up"],
+    [{ x: -100, y: 100 }, "down"],
+    [{ x: 100, y: 100 }, "right"],
+  ];
+
+  for (const [change, facing] of expected) {
+    assert.equal(resolveMovementFacing(token, change, false, true), facing);
+  }
+  delete globalThis.foundry;
 });

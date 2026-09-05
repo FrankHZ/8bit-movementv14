@@ -29,7 +29,7 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - Keep `libWrapper.register` calls during or after Foundry's `init` hook.
 - Avoid raw `innerHTML` for image paths or user-controlled values in UI code.
 - Four/eight-direction mode is a per-Token flag. The hidden world setting exists only as a compatibility fallback for older Tokens.
-- Isometric Perspective direction layout is a world setting. It projects Foundry canvas movement axes into screen-space facings and arranges source previews as a spacious large diamond. Standard and isometric HUDs both use unboxed direction images over one continuous edge-to-edge background. Source flags, row meanings, and preview positions stay unchanged.
+- Isometric Perspective direction layout is a world setting. It projects Foundry canvas movement axes into screen-space facings. Its four-way HUD uses the standard-size grid with previews at the four corners, while its eight-way HUD uses a large diamond with matching padding. Standard and isometric HUDs both use unboxed direction images over one continuous edge-to-edge background. Source flags and row meanings stay unchanged.
 - Sprite-sheet source crop offsets are distinct from Token display offsets. Source rows are one-based and may be shared by multiple directions.
 - World settings provide sprite-sheet frame and direction-row defaults only for missing Token fields. Explicit values already saved in Token flags must always take priority.
 - Token Config field edits should use `{ render: false }`; rebuild only the module fieldset when its structure changes.
@@ -91,7 +91,7 @@ Manual Foundry checks are still important:
 - Test source frame size, crop offsets, repeated direction rows, and out-of-bounds validation.
 - Confirm sprite previews and rendered Tokens use the first frame from every configured row.
 - Confirm sprite-sheet Tokens remain upright in an Isometric Perspective Scene and retain normal scale/offset behavior in a standard Scene.
-- Enable the world isometric layout and confirm southeast movement selects source Down Right; both HUD modes should have no individual cells and should space the source previews across one continuous large-diamond background.
+- Enable the world isometric layout and confirm all four source facings remain reachable in four-way mode and southeast movement selects source Down Right in eight-way mode. Both HUD image modes should have no individual cells; four-way previews occupy the corners of the standard grid and eight-way previews form a large diamond over one continuous background.
 - Confirm the standard HUD uses the same unboxed, continuous-background preview treatment without the isometric direction projection.
 - Collapse and reopen the HUD panel, then confirm its state survives a HUD re-render.
 - Test locking/unlocking movement settings.

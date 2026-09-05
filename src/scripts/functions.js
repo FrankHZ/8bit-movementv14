@@ -14,6 +14,7 @@ import {
 } from "./directional-images.js";
 import {
   applySpriteSheetDirection,
+  cardinalizeSpriteSheetDirection,
   getSpriteSheetFacing,
   isSpriteSheetMode,
   normalizeSpriteSheetDirection,
@@ -179,6 +180,23 @@ function movementDirection(token, change, eightWay) {
   return dx < 0 ? "left" : "right";
 }
 
+export function resolveMovementFacing(
+  token,
+  change,
+  diagonalMode = false,
+  isometric = false,
+) {
+  const direction = movementDirection(
+    token,
+    change,
+    diagonalMode || isometric,
+  );
+  const projected = mapCanvasDirectionToSource(direction, isometric);
+  return diagonalMode
+    ? normalizeSpriteSheetDirection(projected)
+    : cardinalizeSpriteSheetDirection(projected);
+}
+
 function rotationDirection(rotation, eightWay) {
   const normalized = ((Number(rotation) % 360) + 360) % 360;
   if (eightWay) {
@@ -249,8 +267,10 @@ export async function addListener() {
       foundry.utils.hasProperty(change, "y");
     const rotation = foundry.utils.hasProperty(change, "rotation");
     if (move) {
-      const direction = mapCanvasDirectionToSource(
-        movementDirection(token, change, diagonalMode),
+      const direction = resolveMovementFacing(
+        token,
+        change,
+        diagonalMode,
         isometric,
       );
       if (spriteSheetMode) setSpriteSheetFacing(token, change, direction);

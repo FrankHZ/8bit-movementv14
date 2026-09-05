@@ -5,6 +5,7 @@ Change Log for Token Movement 8-bit Style.
     -Added per-direction Foundry video support for WebM, MP4, M4V, and OGV assets, with independent muted looping playback for each Token.
     -Added video previews to the Token HUD and Token Config while keeping GIF and animated WebP files on the existing static-image texture path.
     -Reused Token-specific video textures across refreshes, discarded stale direction changes, and released cloned video resources with the canvas and Token lifecycle.
+    -Fixed four-direction Isometric Perspective movement so all four source facings remain reachable, and placed four-way HUD previews at the corners using the standard HUD spacing and padding.
 
 1.5.3:
 

@@ -210,6 +210,7 @@ function appendDirectionalPreview(
   const grid = document.createElement("div");
   grid.className = "movement-hud-direction-grid";
   grid.classList.toggle("isometric", isometric);
+  grid.classList.toggle("diagonal", diagonalMode);
   for (const direction of CARDINAL_DIRECTIONS) {
     grid.append(
       createDirectionButton(

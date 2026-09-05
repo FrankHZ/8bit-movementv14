@@ -111,7 +111,7 @@ name that Foundry will not recognize.
 
 To initialize a token, select it and click the activate button from the Token HUD or Token Config. If the current texture filename contains a direction suffix, the module infers sibling image paths. Otherwise, every direction starts with the current token texture and can be changed manually.
 
-Enable **Isometric Perspective direction layout** in Module Settings when the world uses an isometric grid. Movement along Foundry's transformed canvas axes selects the matching screen-space facing (for example, moving southeast selects Down Right). The HUD uses a spacious large-diamond arrangement over one continuous preview background while preserving source-art positions: Down stays at the bottom and Down Right stays at the lower right.
+Enable **Isometric Perspective direction layout** in Module Settings when the world uses an isometric grid. Movement along Foundry's transformed canvas axes selects the matching screen-space facing (for example, moving southeast selects Down Right). Four-way HUD previews use the four corners of the standard-size grid; eight-way previews use a large diamond with matching padding over the same continuous background. Source-art positions remain stable: Down stays at the bottom of the eight-way diamond and Down Right stays at the lower right.
 
 ## Current status
 

@@ -127,6 +127,7 @@ export function createSpriteSheetPreview({
   const grid = document.createElement("div");
   grid.className = "movement-direction-preview-grid";
   grid.classList.toggle("isometric", isometric);
+  grid.classList.toggle("diagonal", diagonal);
   grid.hidden = true;
   const previews = directions.map((direction) =>
     createDirectionPreview(
