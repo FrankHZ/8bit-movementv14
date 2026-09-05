@@ -43,8 +43,8 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 
 ## Versioning and Local Release
 
-- The current development release is `1.5.4`; the latest published release is
-  `1.5.3`, and README's install manifest URL remains on that immutable tag.
+- The current published release is `1.5.4`, and README's install manifest URL
+  points to that immutable tag.
 - During future version work, keep README's install URL on the latest published
   tag until its replacement tag and GitHub release exist.
 - The v1.5.4 manifest uses Foundry `minimum: 13` and `verified: 14.367`.
