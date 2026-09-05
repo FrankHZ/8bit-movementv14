@@ -29,6 +29,7 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 - Keep `libWrapper.register` calls during or after Foundry's `init` hook.
 - Avoid raw `innerHTML` for image paths or user-controlled values in UI code.
 - Four/eight-direction mode is a per-Token flag. The hidden world setting exists only as a compatibility fallback for older Tokens.
+- Keep canonical direction metadata, four/eight-way facing rules, isometric projection, preview placement, and separate-image flag aliases in `src/scripts/directions.js`. Persisted diagonal image flags remain `UL`, `UR`, `DL`, and `DR` for compatibility.
 - Isometric Perspective direction layout is a world setting. Four-way mode keeps Foundry's canvas directions and projects them onto the HUD and Token Config preview corners, with Down at the lower right. Eight-way mode projects canvas movement axes into screen-space facings and uses a large diamond with matching padding. Standard and isometric HUDs both use unboxed direction images over one continuous edge-to-edge background. Source flags and row meanings stay unchanged.
 - Sprite-sheet source crop offsets are distinct from Token display offsets. Source rows are one-based and may be shared by multiple directions.
 - World settings provide sprite-sheet frame and direction-row defaults only for missing Token fields. Explicit values already saved in Token flags must always take priority.

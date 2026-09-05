@@ -1,4 +1,9 @@
 import { MODULE_NAME } from "../constants.js";
+import {
+  DIRECTION_BY_KEY,
+  cardinalizeDirection,
+  normalizeDirection,
+} from "../directions.js";
 
 export const DEFAULT_RPGM_FRAME_SIZE = 48;
 export const SPRITE_SHEET_DEFAULT_FRAME_WIDTH_SETTING =
@@ -16,77 +21,33 @@ export const SPRITE_SHEET_DEFAULT_ROW_SETTINGS = Object.freeze({
   "up-right": "spriteSheetDefaultRowUpRight",
 });
 
+function defineSpriteDirection(key, defaultRow) {
+  return Object.freeze({
+    key,
+    defaultRow,
+    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS[key],
+    labelKey: DIRECTION_BY_KEY[key].labelKey,
+  });
+}
+
 export const CARDINAL_SPRITE_DIRECTIONS = Object.freeze([
-  {
-    key: "down",
-    defaultRow: 1,
-    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS.down,
-    labelKey: "8BITMOVEMENT.down",
-  },
-  {
-    key: "left",
-    defaultRow: 2,
-    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS.left,
-    labelKey: "8BITMOVEMENT.left",
-  },
-  {
-    key: "right",
-    defaultRow: 3,
-    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS.right,
-    labelKey: "8BITMOVEMENT.right",
-  },
-  {
-    key: "up",
-    defaultRow: 4,
-    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS.up,
-    labelKey: "8BITMOVEMENT.up",
-  },
+  defineSpriteDirection("down", 1),
+  defineSpriteDirection("left", 2),
+  defineSpriteDirection("right", 3),
+  defineSpriteDirection("up", 4),
 ]);
 
 export const DIAGONAL_SPRITE_DIRECTIONS = Object.freeze([
-  {
-    key: "down-left",
-    defaultRow: 1,
-    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS["down-left"],
-    labelKey: "8BITMOVEMENT.down-left",
-  },
-  {
-    key: "down-right",
-    defaultRow: 1,
-    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS["down-right"],
-    labelKey: "8BITMOVEMENT.down-right",
-  },
-  {
-    key: "up-left",
-    defaultRow: 4,
-    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS["up-left"],
-    labelKey: "8BITMOVEMENT.up-left",
-  },
-  {
-    key: "up-right",
-    defaultRow: 4,
-    defaultRowSetting: SPRITE_SHEET_DEFAULT_ROW_SETTINGS["up-right"],
-    labelKey: "8BITMOVEMENT.up-right",
-  },
+  defineSpriteDirection("down-left", 1),
+  defineSpriteDirection("down-right", 1),
+  defineSpriteDirection("up-left", 4),
+  defineSpriteDirection("up-right", 4),
 ]);
 
 export const SPRITE_SHEET_DIRECTIONS = Object.freeze([
   ...CARDINAL_SPRITE_DIRECTIONS,
   ...DIAGONAL_SPRITE_DIRECTIONS,
 ]);
-
-const DEFAULT_DIRECTION = "down";
-const DIRECTION_BY_KEY = Object.freeze(
-  Object.fromEntries(
-    SPRITE_SHEET_DIRECTIONS.map((direction) => [direction.key, direction]),
-  ),
-);
-const CARDINAL_DIRECTION_FALLBACKS = Object.freeze({
-  "down-left": "down",
-  "down-right": "down",
-  "up-left": "up",
-  "up-right": "up",
-});
 
 export function numberOr(value, fallback) {
   const number = Number(value);
@@ -125,14 +86,11 @@ export function getSpriteSheetDirections(diagonalMode = false) {
 }
 
 export function normalizeSpriteSheetDirection(direction) {
-  return Object.hasOwn(DIRECTION_BY_KEY, direction)
-    ? direction
-    : DEFAULT_DIRECTION;
+  return normalizeDirection(direction);
 }
 
 export function cardinalizeSpriteSheetDirection(direction) {
-  const normalized = normalizeSpriteSheetDirection(direction);
-  return CARDINAL_DIRECTION_FALLBACKS[normalized] ?? normalized;
+  return cardinalizeDirection(direction);
 }
 
 export function withSpriteSheetDefaults(config = {}) {

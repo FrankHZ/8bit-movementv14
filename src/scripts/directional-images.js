@@ -4,24 +4,19 @@ import {
   SPRITE_SHEET_MODE,
 } from "./constants.js";
 import {
-  cardinalizeSpriteSheetDirection,
-  normalizeSpriteSheetDirection,
-  SPRITE_SHEET_DIRECTIONS,
-} from "./sprite-sheet/config.js";
+  DIRECTIONS,
+  cardinalizeDirection,
+  normalizeDirection,
+} from "./directions.js";
 
 export const IMAGE_FLAG_BY_DIRECTION = Object.freeze({
-  up: "up",
-  down: "down",
-  left: "left",
-  right: "right",
-  "up-left": "UL",
-  "up-right": "UR",
-  "down-left": "DL",
-  "down-right": "DR",
+  ...Object.fromEntries(
+    DIRECTIONS.map((direction) => [direction.key, direction.imageFlag]),
+  ),
 });
 
 const DIRECTION_KEYS = new Set(
-  SPRITE_SHEET_DIRECTIONS.map((direction) => direction.key),
+  DIRECTIONS.map((direction) => direction.key),
 );
 const texturePromises = new Map();
 const tokenRequests = new Map();
@@ -56,7 +51,7 @@ function configuredImage(document, direction) {
 
 export function getDirectionalImage(tokenOrDocument, direction) {
   const document = getTokenDocument(tokenOrDocument);
-  const facing = normalizeSpriteSheetDirection(direction);
+  const facing = normalizeDirection(direction);
   const configured = configuredImage(document, facing);
   if (configured) return configured;
   if (facing.startsWith("up-")) return configuredImage(document, "up");
@@ -68,7 +63,7 @@ function deriveFacingFromTexture(document) {
   const current = String(document?.texture?.src ?? "").trim();
   if (!current) return "down";
 
-  for (const direction of SPRITE_SHEET_DIRECTIONS) {
+  for (const direction of DIRECTIONS) {
     if (configuredImage(document, direction.key) === current) {
       return direction.key;
     }
@@ -84,7 +79,7 @@ export function getDirectionalFacing(tokenOrDocument) {
     : deriveFacingFromTexture(document);
   return getTokenDiagonalMode(document)
     ? facing
-    : cardinalizeSpriteSheetDirection(facing);
+    : cardinalizeDirection(facing);
 }
 
 export function stageDirectionalFacing(tokenOrDocument, change, direction) {
@@ -92,8 +87,8 @@ export function stageDirectionalFacing(tokenOrDocument, change, direction) {
   if (!document || !change || !direction) return null;
 
   const facing = getTokenDiagonalMode(document)
-    ? normalizeSpriteSheetDirection(direction)
-    : cardinalizeSpriteSheetDirection(direction);
+    ? normalizeDirection(direction)
+    : cardinalizeDirection(direction);
   const src = getDirectionalImage(document, facing);
   if (!src) return null;
 
@@ -280,8 +275,8 @@ export async function applyDirectionalImage(token, direction) {
   if (!token?.mesh || token.destroyed || !isDirectionalImageMode(token)) return;
 
   const facing = getTokenDiagonalMode(token)
-    ? normalizeSpriteSheetDirection(direction)
-    : cardinalizeSpriteSheetDirection(direction);
+    ? normalizeDirection(direction)
+    : cardinalizeDirection(direction);
   const src = getDirectionalImage(token, facing);
   if (!src) return;
 
@@ -307,7 +302,7 @@ export async function applyDirectionalImage(token, direction) {
 
 export async function preloadDirectionalImages(tokenOrDocument) {
   const sources = new Set();
-  for (const direction of SPRITE_SHEET_DIRECTIONS) {
+  for (const direction of DIRECTIONS) {
     const src = getDirectionalImage(tokenOrDocument, direction.key);
     if (src) sources.add(src);
   }
@@ -315,7 +310,7 @@ export async function preloadDirectionalImages(tokenOrDocument) {
 }
 
 function preloadCurrentImages(token) {
-  const sources = SPRITE_SHEET_DIRECTIONS.map((direction) =>
+  const sources = DIRECTIONS.map((direction) =>
     getDirectionalImage(token, direction.key),
   )
     .filter(Boolean)

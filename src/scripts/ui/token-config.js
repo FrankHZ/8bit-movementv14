@@ -98,7 +98,7 @@ function addDirectionPicker(
       src: images[direction.key],
       onSelect: async (path) => {
         await token.update(
-          { [`flags.${MODULE_NAME}.${direction.key}`]: path },
+          { [`flags.${MODULE_NAME}.${direction.imageFlag}`]: path },
           { render: false },
         );
       },

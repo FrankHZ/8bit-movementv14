@@ -7,41 +7,13 @@ import {
   getTokenDiagonalMode,
   SPRITE_SHEET_MODE,
 } from "../constants.js";
+import {
+  CARDINAL_DIRECTIONS,
+  DIAGONAL_DIRECTIONS,
+} from "../directions.js";
 import { withSpriteSheetDefaults } from "../sprite-sheet.js";
 
-export const CARDINAL_DIRECTIONS = Object.freeze([
-  { key: "up", action: "up-image", labelKey: "8BITMOVEMENT.up" },
-  { key: "down", action: "down-image", labelKey: "8BITMOVEMENT.down" },
-  { key: "left", action: "left-image", labelKey: "8BITMOVEMENT.left" },
-  { key: "right", action: "right-image", labelKey: "8BITMOVEMENT.right" },
-]);
-
-export const DIAGONAL_DIRECTIONS = Object.freeze([
-  {
-    key: "UL",
-    action: "up-left-image",
-    labelKey: "8BITMOVEMENT.up-left",
-    hudLabel: "UL",
-  },
-  {
-    key: "UR",
-    action: "up-right-image",
-    labelKey: "8BITMOVEMENT.up-right",
-    hudLabel: "UR",
-  },
-  {
-    key: "DL",
-    action: "down-left-image",
-    labelKey: "8BITMOVEMENT.down-left",
-    hudLabel: "DL",
-  },
-  {
-    key: "DR",
-    action: "down-right-image",
-    labelKey: "8BITMOVEMENT.down-right",
-    hudLabel: "DR",
-  },
-]);
+export { CARDINAL_DIRECTIONS, DIAGONAL_DIRECTIONS };
 
 export function localize(key) {
   return game.i18n.format(key);
@@ -77,14 +49,14 @@ export function getDirectionalImages(tokenDocument, fallbackImage) {
   const images = {};
   for (const direction of CARDINAL_DIRECTIONS) {
     images[direction.key] =
-      tokenDocument.getFlag(MODULE_NAME, direction.key) || fallbackImage;
+      tokenDocument.getFlag(MODULE_NAME, direction.imageFlag) || fallbackImage;
   }
   for (const direction of DIAGONAL_DIRECTIONS) {
-    const verticalFallback = direction.key.startsWith("U")
+    const verticalFallback = direction.key.startsWith("up-")
       ? images.up
       : images.down;
     images[direction.key] =
-      tokenDocument.getFlag(MODULE_NAME, direction.key) || verticalFallback;
+      tokenDocument.getFlag(MODULE_NAME, direction.imageFlag) || verticalFallback;
   }
   return images;
 }

@@ -1,15 +1,12 @@
 import {
   getSpriteSheetDirections,
   inspectSpriteSheet,
-  SPRITE_SHEET_DIRECTIONS,
 } from "../sprite-sheet.js";
-import { projectDirectionToScreen } from "../constants.js";
-
-const DIRECTION_BY_KEY = Object.freeze(
-  Object.fromEntries(
-    SPRITE_SHEET_DIRECTIONS.map((direction) => [direction.key, direction]),
-  ),
-);
+import {
+  DIRECTION_BY_KEY,
+  getPreviewLayoutDirection,
+  projectDirectionToScreen,
+} from "../directions.js";
 
 function localize(key, data = {}) {
   return game.i18n.format(key, data);
@@ -52,17 +49,22 @@ function createDirectionPreview(
   direction,
   onActivate,
   showLabel,
+  diagonal,
   isometric,
   compact,
 ) {
   const card = document.createElement(onActivate ? "button" : "div");
   if (onActivate) card.type = "button";
-  card.className = `movement-direction-preview movement-direction-${direction.key}`;
+  card.className = "movement-direction-preview";
   card.dataset.direction = direction.key;
   card.dataset.screenDirection = projectDirectionToScreen(
     direction.key,
     isometric,
   );
+  card.dataset.layoutDirection = getPreviewLayoutDirection(direction.key, {
+    eightWay: diagonal,
+    isometric,
+  });
   card.title = localize(direction.labelKey);
   if (onActivate) card.setAttribute("aria-label", card.title);
 
@@ -125,7 +127,7 @@ export function createSpriteSheetPreview({
   status.append(statusIcon, statusText);
 
   const grid = document.createElement("div");
-  grid.className = "movement-direction-preview-grid";
+  grid.className = "movement-direction-grid movement-direction-preview-grid";
   grid.classList.toggle("isometric", isometric);
   grid.classList.toggle("diagonal", diagonal);
   grid.hidden = true;
@@ -134,6 +136,7 @@ export function createSpriteSheetPreview({
       direction,
       onActivate,
       showLabels,
+      diagonal,
       isometric,
       compact,
     ),
