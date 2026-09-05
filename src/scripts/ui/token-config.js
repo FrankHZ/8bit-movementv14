@@ -5,6 +5,7 @@ import {
 } from "../functions.js";
 import {
   DIRECTIONAL_IMAGE_MODE,
+  getIsometricPerspectiveMode,
   SPRITE_SHEET_MODE,
 } from "../constants.js";
 import {
@@ -286,7 +287,10 @@ function addSpriteSheetControls(
     },
   );
 
-  preview = createSpriteSheetPreview({ diagonal: diagonalMode });
+  preview = createSpriteSheetPreview({
+    diagonal: diagonalMode,
+    isometric: getIsometricPerspectiveMode(),
+  });
   createFormGroup(
     fieldset,
     localize("8BITMOVEMENT.Sprite-Sheet-Direction-Rows"),
