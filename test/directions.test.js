@@ -109,29 +109,14 @@ test("facing policy covers four/eight-way and standard/isometric modes", () => {
   }
 });
 
-test("preview layout projects only four-way isometric directions", () => {
+test("preview layout projects every isometric direction", () => {
   for (const { key } of DIRECTIONS) {
     assert.equal(
-      getPreviewLayoutDirection(key, {
-        eightWay: false,
-        isometric: false,
-      }),
+      getPreviewLayoutDirection(key, { isometric: false }),
       key,
     );
     assert.equal(
-      getPreviewLayoutDirection(key, {
-        eightWay: true,
-        isometric: true,
-      }),
-      key,
-    );
-  }
-  for (const { key } of CARDINAL_DIRECTIONS) {
-    assert.equal(
-      getPreviewLayoutDirection(key, {
-        eightWay: false,
-        isometric: true,
-      }),
+      getPreviewLayoutDirection(key, { isometric: true }),
       projectDirectionToScreen(key, true),
     );
   }

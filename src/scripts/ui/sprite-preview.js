@@ -49,7 +49,6 @@ function createDirectionPreview(
   direction,
   onActivate,
   showLabel,
-  diagonal,
   isometric,
   compact,
 ) {
@@ -62,7 +61,6 @@ function createDirectionPreview(
     isometric,
   );
   card.dataset.layoutDirection = getPreviewLayoutDirection(direction.key, {
-    eightWay: diagonal,
     isometric,
   });
   card.title = localize(direction.labelKey);
@@ -136,7 +134,6 @@ export function createSpriteSheetPreview({
       direction,
       onActivate,
       showLabels,
-      diagonal,
       isometric,
       compact,
     ),

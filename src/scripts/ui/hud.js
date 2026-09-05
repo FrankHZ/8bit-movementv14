@@ -160,7 +160,6 @@ function createDirectionButton(
   token,
   sheet,
   locked,
-  diagonalMode,
   isometric,
 ) {
   const screenDirection = projectDirectionToScreen(
@@ -168,7 +167,6 @@ function createDirectionButton(
     isometric,
   );
   const layoutDirection = getPreviewLayoutDirection(direction.key, {
-    eightWay: diagonalMode,
     isometric,
   });
   const title = localize(direction.labelKey);
@@ -217,7 +215,6 @@ function appendDirectionalPreview(
         token,
         sheet,
         locked,
-        diagonalMode,
         isometric,
       ),
     );
@@ -231,7 +228,6 @@ function appendDirectionalPreview(
           token,
           sheet,
           locked,
-          diagonalMode,
           isometric,
         ),
       );

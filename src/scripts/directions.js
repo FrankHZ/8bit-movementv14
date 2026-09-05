@@ -125,10 +125,10 @@ export function resolveFacingDirection(
 /** Choose the compass slot used by HUD and Token Config previews. */
 export function getPreviewLayoutDirection(
   direction,
-  { eightWay = false, isometric = false } = {},
+  { isometric = false } = {},
 ) {
   const normalized = normalizeDirection(direction);
-  return isometric && !eightWay
+  return isometric
     ? projectDirectionToScreen(normalized, true)
     : normalized;
 }

@@ -22,7 +22,7 @@
   "8BITMOVEMENT.Token-Mode_name": "指示物 HUD 模式：",
   "8BITMOVEMENT.Token-Mode_hint": "启用后，可以在指示物 HUD 中配置方向图片。",
   "8BITMOVEMENT.Isometric-Perspective_name": "等距透视方向布局",
-  "8BITMOVEMENT.Isometric-Perspective_hint": "按 Isometric Perspective 投影方向。四向模式的“下”位于 HUD 右下角；八向模式向屏幕东南移动时选择“右下”。",
+  "8BITMOVEMENT.Isometric-Perspective_hint": "按 Isometric Perspective 投影方向。四向和八向模式的“下”都位于预览右下方；八向模式向屏幕东南移动时选择“右下”。",
   "8BITMOVEMENT.Diagonal-Mode_name": "旧版斜向模式：",
   "8BITMOVEMENT.Diagonal-Mode_hint": "为斜向模式改为每个指示物单独设置前创建的指示物提供兼容回退。",
   "8BITMOVEMENT.Warn.No_Images": "未找到此指示物的方向图片，请先上传方向图片。",
