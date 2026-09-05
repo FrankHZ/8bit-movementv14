@@ -10,14 +10,14 @@ import { resolveMovementFacing } from "../src/scripts/functions.js";
 
 test("isometric projection places source directions on screen", () => {
   const expected = {
-    down: "down-left",
-    right: "down-right",
-    up: "up-right",
-    left: "up-left",
-    "down-right": "down",
-    "up-right": "right",
-    "up-left": "up",
-    "down-left": "left",
+    down: "down-right",
+    right: "up-right",
+    up: "up-left",
+    left: "down-left",
+    "down-right": "right",
+    "up-right": "up",
+    "up-left": "left",
+    "down-left": "down",
   };
 
   for (const [source, screen] of Object.entries(expected)) {
@@ -68,7 +68,7 @@ test("isometric perspective is a safe world-setting lookup", () => {
   assert.equal(getIsometricPerspectiveMode(undefined), false);
 });
 
-test("four-way isometric movement preserves all four projected facings", () => {
+test("four-way isometric movement preserves all four canvas facings", () => {
   globalThis.foundry = {
     utils: {
       hasProperty(object, key) {
@@ -78,10 +78,10 @@ test("four-way isometric movement preserves all four projected facings", () => {
   };
   const token = { x: 0, y: 0 };
   const expected = [
-    [{ x: -100, y: -100 }, "left"],
-    [{ x: 100, y: -100 }, "up"],
-    [{ x: -100, y: 100 }, "down"],
-    [{ x: 100, y: 100 }, "right"],
+    [{ y: -100 }, "up"],
+    [{ x: 100 }, "right"],
+    [{ y: 100 }, "down"],
+    [{ x: -100 }, "left"],
   ];
 
   for (const [change, facing] of expected) {

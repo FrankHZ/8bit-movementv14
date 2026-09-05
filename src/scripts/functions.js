@@ -186,12 +186,11 @@ export function resolveMovementFacing(
   diagonalMode = false,
   isometric = false,
 ) {
-  const direction = movementDirection(
-    token,
-    change,
-    diagonalMode || isometric,
+  const direction = movementDirection(token, change, diagonalMode);
+  const projected = mapCanvasDirectionToSource(
+    direction,
+    isometric && diagonalMode,
   );
-  const projected = mapCanvasDirectionToSource(direction, isometric);
   return diagonalMode
     ? normalizeSpriteSheetDirection(projected)
     : cardinalizeSpriteSheetDirection(projected);
@@ -278,7 +277,7 @@ export async function addListener() {
     } else if (rotation) {
       const direction = mapCanvasDirectionToSource(
         rotationDirection(change.rotation, diagonalMode),
-        isometric,
+        isometric && diagonalMode,
       );
       if (spriteSheetMode) setSpriteSheetFacing(token, change, direction);
       else setDirectionalTexture(token, change, direction);

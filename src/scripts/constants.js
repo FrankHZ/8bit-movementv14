@@ -4,18 +4,7 @@ export const DIRECTIONAL_IMAGE_MODE = "separate";
 export const SPRITE_SHEET_MODE = "sheet";
 export const ISOMETRIC_PERSPECTIVE_SETTING = "isometricPerspective";
 
-const ISOMETRIC_SCREEN_DIRECTIONS = Object.freeze({
-  down: "down-left",
-  right: "down-right",
-  up: "up-right",
-  left: "up-left",
-  "down-right": "down",
-  "up-right": "right",
-  "up-left": "up",
-  "down-left": "left",
-});
-
-const ISOMETRIC_SOURCE_DIRECTIONS_BY_CANVAS = Object.freeze({
+const ISOMETRIC_PROJECTED_DIRECTIONS = Object.freeze({
   down: "down-right",
   right: "up-right",
   up: "up-left",
@@ -40,13 +29,13 @@ export function getIsometricPerspectiveMode(gameInstance = globalThis.game) {
 /** Project a source-art direction onto the HUD's screen-space compass. */
 export function projectDirectionToScreen(direction, isometric = false) {
   if (!isometric) return direction;
-  return ISOMETRIC_SCREEN_DIRECTIONS[direction] ?? direction;
+  return ISOMETRIC_PROJECTED_DIRECTIONS[direction] ?? direction;
 }
 
 /** Project Foundry canvas movement axes into screen-space source directions. */
 export function mapCanvasDirectionToSource(direction, isometric = false) {
   if (!isometric) return direction;
-  return ISOMETRIC_SOURCE_DIRECTIONS_BY_CANVAS[direction] ?? direction;
+  return ISOMETRIC_PROJECTED_DIRECTIONS[direction] ?? direction;
 }
 
 export function getTokenDiagonalMode(tokenOrDocument) {
