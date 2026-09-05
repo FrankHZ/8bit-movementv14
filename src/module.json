@@ -2,13 +2,13 @@
   "name": "8bit-movement-frankhz",
   "id": "8bit-movement-frankhz",
   "title": "Token Movement 8bit Style",
-  "description": "Configure four- or eight-direction Token movement with separate images or a row-mapped RPG Maker sprite sheet.<br>Setup is available from the Token HUD and Token Config, with per-Token direction mode, previews, and prototype saving.",
+  "description": "Configure four- or eight-direction Token movement with separate images, looping videos, or a row-mapped RPG Maker sprite sheet.<br>Setup is available from the Token HUD and Token Config, with per-Token direction mode, previews, and prototype saving.",
   "authors": [
     {
       "name": "FrankHZ"
     }
   ],
-  "version": "1.5.3",
+  "version": "1.5.4",
   "compatibility": {
     "minimum": "13",
     "verified": "14.367"
@@ -28,9 +28,9 @@
       "path": "lang/cn.json"
     }
   ],
-  "manifest": "https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.3/src/module.json",
+  "manifest": "https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.4/src/module.json",
   "url": "https://github.com/FrankHZ/8bit-movementv14",
-  "download": "https://github.com/FrankHZ/8bit-movementv14/releases/download/v1.5.3/8bit-movement-frankhz.zip",
+  "download": "https://github.com/FrankHZ/8bit-movementv14/releases/download/v1.5.4/8bit-movement-frankhz.zip",
   "protected": false,
   "coreTranslation": false,
   "library": false,

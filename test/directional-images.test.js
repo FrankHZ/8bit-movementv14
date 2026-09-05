@@ -7,6 +7,7 @@ import {
   clearDirectionalImageCache,
   getDirectionalFacing,
   getDirectionalImage,
+  isVideoSource,
   preloadDirectionalImages,
   stageDirectionalFacing,
 } from "../src/scripts/directional-images.js";
@@ -196,4 +197,103 @@ test("direct texture installation never mutates the Token document", () => {
   assert.equal(applyDirectionalTexture(token, texture), true);
   assert.deepEqual(document.flags, snapshot);
   assert.equal(document.texture.src, "tokens/hero-down.webp");
+});
+
+test("recognizes Foundry video sources without treating animated images as videos", () => {
+  assert.equal(isVideoSource("tokens/hero.webm"), true);
+  assert.equal(isVideoSource("tokens/HERO.MP4?cache=1"), true);
+  assert.equal(isVideoSource("tokens/hero.m4v#preview"), true);
+  assert.equal(isVideoSource("tokens/hero.ogv"), true);
+  assert.equal(isVideoSource("tokens/hero.gif"), false);
+  assert.equal(isVideoSource("tokens/hero.webp"), false);
+});
+
+test("directional videos use one independent looping texture per Token", async () => {
+  clearDirectionalImageCache();
+  const sourceVideo = { id: "source-video" };
+  const clonedVideos = [{ id: "cloned-video-1" }, { id: "cloned-video-2" }];
+  let cloneCalls = 0;
+  let destroyCalls = 0;
+  const playCalls = [];
+  const stopCalls = [];
+  const videoTexture = { video: sourceVideo };
+  const clonedTextures = clonedVideos.map((video) => ({
+    video,
+    baseTexture: {
+      destroyed: false,
+      destroy() {
+        if (!this.destroyed) {
+          this.destroyed = true;
+          destroyCalls += 1;
+        }
+      },
+    },
+  }));
+  const staticTexture = { id: "up-static" };
+
+  globalThis.game = {
+    video: {
+      pending: new Set(),
+      getVideoSource(texture) {
+        return texture?.video ?? null;
+      },
+      async cloneTexture(video) {
+        assert.equal(video, sourceVideo);
+        const texture = clonedTextures[cloneCalls];
+        cloneCalls += 1;
+        return texture;
+      },
+      play(video, options) {
+        playCalls.push({ video, options });
+        return Promise.resolve();
+      },
+      stop(video) {
+        stopCalls.push(video);
+      },
+    },
+  };
+  globalThis.foundry = {
+    canvas: {
+      async loadTexture(src) {
+        return src.endsWith(".webm") ? videoTexture : staticTexture;
+      },
+    },
+  };
+  const token = mockToken(
+    mockDocument({
+      facing: "right",
+      images: { right: "tokens/hero-right.webm" },
+    }),
+  );
+
+  await applyDirectionalImage(token, "right");
+  assert.equal(token.texture, clonedTextures[0]);
+  assert.equal(token.mesh.texture, clonedTextures[0]);
+  assert.equal(cloneCalls, 1);
+  assert.deepEqual(playCalls, [
+    {
+      video: clonedVideos[0],
+      options: { volume: 0, loop: true, offset: 0 },
+    },
+  ]);
+
+  await applyDirectionalImage(token, "right");
+  assert.equal(cloneCalls, 1, "the Token-specific video clone is reused");
+  assert.equal(playCalls.length, 1, "refreshing does not restart active playback");
+
+  clonedTextures[0].baseTexture.destroyed = true;
+  await applyDirectionalImage(token, "right");
+  assert.equal(cloneCalls, 2, "a core-destroyed video clone is recreated");
+  assert.equal(token.texture, clonedTextures[1]);
+  assert.equal(playCalls.length, 2);
+
+  await applyDirectionalImage(token, "up");
+  assert.equal(token.texture, staticTexture);
+  assert.equal(stopCalls.includes(clonedVideos[1]), true);
+
+  clearDirectionalImageCache();
+  await Promise.resolve();
+  assert.equal(destroyCalls, 1);
+  delete globalThis.foundry;
+  delete globalThis.game;
 });

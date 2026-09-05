@@ -5,9 +5,12 @@ import {
 } from "../functions.js";
 import {
   getIsometricPerspectiveMode,
-  projectDirectionToScreen,
   SPRITE_SHEET_MODE,
 } from "../constants.js";
+import {
+  getPreviewLayoutDirection,
+  projectDirectionToScreen,
+} from "../directions.js";
 import {
   CARDINAL_DIRECTIONS,
   DIAGONAL_DIRECTIONS,
@@ -22,17 +25,8 @@ import {
   localize,
 } from "./shared.js";
 import { createSpriteSheetPreview } from "./sprite-preview.js";
+import { createMediaPreview } from "./dom.js";
 
-const DIRECTION_META = Object.freeze({
-  up: { direction: "up" },
-  down: { direction: "down" },
-  left: { direction: "left" },
-  right: { direction: "right" },
-  UL: { direction: "up-left" },
-  UR: { direction: "up-right" },
-  DL: { direction: "down-left" },
-  DR: { direction: "down-right" },
-});
 const DIRECTION_GLYPHS = Object.freeze({
   up: "↑",
   down: "↓",
@@ -168,31 +162,32 @@ function createDirectionButton(
   locked,
   isometric,
 ) {
-  const meta = DIRECTION_META[direction.key];
   const screenDirection = projectDirectionToScreen(
-    meta.direction,
+    direction.key,
     isometric,
   );
+  const layoutDirection = getPreviewLayoutDirection(direction.key, {
+    isometric,
+  });
   const title = localize(direction.labelKey);
   const button = document.createElement("button");
   button.type = "button";
   button.className = "movement-hud-direction";
-  button.dataset.direction = meta.direction;
+  button.dataset.direction = direction.key;
   button.dataset.screenDirection = screenDirection;
+  button.dataset.layoutDirection = layoutDirection;
   button.title = title;
   button.setAttribute("aria-label", title);
   button.disabled = locked;
 
-  const image = document.createElement("img");
-  image.src = src;
-  image.alt = title;
+  const image = createMediaPreview(src, title);
   const glyph = document.createElement("span");
   glyph.className = "movement-hud-direction-glyph";
   glyph.textContent = DIRECTION_GLYPHS[screenDirection];
   button.append(image, glyph);
   if (!locked) {
     button.addEventListener("click", async () => {
-      await imageLoader(token.id, sheet, direction.key);
+      await imageLoader(token.id, sheet, direction.imageFlag);
     });
   }
   return button;
@@ -209,8 +204,9 @@ function appendDirectionalPreview(
 ) {
   body.classList.add("movement-hud-preview-body");
   const grid = document.createElement("div");
-  grid.className = "movement-hud-direction-grid";
+  grid.className = "movement-direction-grid movement-hud-direction-grid";
   grid.classList.toggle("isometric", isometric);
+  grid.classList.toggle("diagonal", diagonalMode);
   for (const direction of CARDINAL_DIRECTIONS) {
     grid.append(
       createDirectionButton(

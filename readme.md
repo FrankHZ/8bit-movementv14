@@ -2,13 +2,14 @@
 
 `8bit-movement` lets a token swap between directional images so movement feels closer to old-school 8-bit RPGs. You can configure four-direction movement or enable diagonals for eight-direction sprites.
 
-This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. The current v1.5.3 release supports v13 and is verified for Foundry VTT `14.367`.
+This fork is focused on Foundry Virtual Tabletop v13 and v14 compatibility. Release v1.5.4 supports v13 and is verified for Foundry VTT `14.367`.
 
 ## Features
 
 - Set directional token images from the Token HUD
 - Configure the same images from Token Config
 - Auto-detect direction suffixes in filenames during setup
+- Loop per-direction video assets independently for each Token
 - Per-Token four/eight-direction switching in both image modes
 - Single-character RPG Maker sprite-sheet mode with configurable frame size
 - Save directional settings back to the actor's prototype token
@@ -72,6 +73,13 @@ facing flag, and the Token document's texture path is not rewritten after the
 movement completes. This avoids a delayed mesh resize interrupting an active
 mouse drag.
 
+Separate-image mode also accepts Foundry's `.webm`, `.mp4`, `.m4v`, and `.ogv`
+video formats. Each Token receives an independent muted video texture which
+loops from the beginning when that direction becomes active. WebM is the
+recommended format, especially when transparency is required. GIF and animated
+WebP files remain image textures and are not supported as animated Token art;
+their HUD preview may animate even when the canvas texture displays one frame.
+
 ## Setup
 
 Enable the module in a world, then configure the module settings from Foundry's Configure Settings dialog.
@@ -79,7 +87,7 @@ Enable the module in a world, then configure the module settings from Foundry's 
 For manual installation, use this manifest URL:
 
 ```text
-https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.3/src/module.json
+https://raw.githubusercontent.com/FrankHZ/8bit-movementv14/v1.5.4/src/module.json
 ```
 
 When installing a downloaded ZIP manually, the final directory must be named
@@ -103,14 +111,15 @@ name that Foundry will not recognize.
 
 To initialize a token, select it and click the activate button from the Token HUD or Token Config. If the current texture filename contains a direction suffix, the module infers sibling image paths. Otherwise, every direction starts with the current token texture and can be changed manually.
 
-Enable **Isometric Perspective direction layout** in Module Settings when the world uses an isometric grid. Movement along Foundry's transformed canvas axes selects the matching screen-space facing (for example, moving southeast selects Down Right). The HUD uses a spacious large-diamond arrangement over one continuous preview background while preserving source-art positions: Down stays at the bottom and Down Right stays at the lower right.
+Enable **Isometric Perspective direction layout** in Module Settings when the world uses an isometric grid. HUD and Token Config previews project every direction consistently, so Down appears at the lower right in both four- and eight-way modes. Four-way movement keeps Foundry's four canvas directions. Eight-way movement projects the canvas axes into matching screen-space facings (for example, moving southeast selects Down Right) and uses a large diamond with matching padding over the same continuous background.
 
 ## Current status
 
 - Manifest minimum and verified versions are Foundry VTT `13` and `14.367`
 - Updated from earlier v10-v13 forks
-- Smoke-tested on Foundry VTT `13.351` and `14.367`, including the v1.5.3
-  separate-image movement fix on Foundry VTT `14.367`
+- Smoke-tested on Foundry VTT `13.351` and `14.367`; the v1.5.4 directional
+  video, four/eight-direction, and standard/isometric preview paths were also
+  manually tested on Foundry VTT `14.367`
 
 ## Development notes
 
@@ -164,7 +173,7 @@ This repo also includes a small helper for Foundry's Package Release API.
    npm run release:publish
    ```
 
-Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.3`. The API payload uses that tag for the version-specific manifest URL.
+Before publishing, make sure the version in `src/module.json` has a matching pushed git tag such as `v1.5.4`. The API payload uses that tag for the version-specific manifest URL.
 
 ## Credits
 

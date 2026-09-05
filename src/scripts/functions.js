@@ -2,10 +2,17 @@ import {
   DIRECTIONAL_IMAGE_MODE,
   getIsometricPerspectiveMode,
   getTokenDiagonalMode,
-  mapCanvasDirectionToSource,
   MODULE_NAME,
   SPRITE_SHEET_MODE,
 } from "./constants.js";
+import {
+  CARDINAL_DIRECTIONS,
+  DIAGONAL_DIRECTIONS,
+  directionFromDelta,
+  directionFromRotation,
+  inferDirectionalImageSources,
+  resolveFacingDirection,
+} from "./directions.js";
 import {
   applyDirectionalImage,
   getDirectionalFacing,
@@ -40,40 +47,11 @@ export async function initializeMovement(tokenId, { render = true } = {}) {
     ? getTokenDiagonalMode(token)
     : false;
   const textureSrc = token.document.texture.src;
-  const imagePath = token.document.texture.src.substring(
-    token.document.texture.src.lastIndexOf("/") + 1,
-    token.document.texture.src.lastIndexOf("."),
-  );
-  let directions = [
-    "up",
-    "down",
-    "left",
-    "right",
-    "UP",
-    "DOWN",
-    "LEFT",
-    "RIGHT",
-  ];
-  const hasDirection = directions.find((d) => imagePath.includes(d));
-  const matchedDirectionIndex = directions.indexOf(hasDirection);
-  const isLowerCase = matchedDirectionIndex < 4;
+  const inferred = inferDirectionalImageSources(textureSrc, diagonalMode);
   const initialFacing = hasExistingConfig
     ? getDirectionalFacing(token.document)
-    : ["up", "down", "left", "right"][matchedDirectionIndex % 4] ?? "down";
-  directions = isLowerCase
-    ? directions
-    : directions.map((d) => d.toUpperCase());
-  if (diagonalMode)
-    directions = directions.concat(
-      isLowerCase ? ["ul", "ur", "dl", "dr"] : ["UL", "UR", "DL", "DR"],
-    );
-  const sourceFor = (index) =>
-    hasDirection ? textureSrc.replace(hasDirection, directions[index]) : textureSrc;
+    : inferred.facing;
   const update = {
-    [`flags.${MODULE_NAME}.up`]: sourceFor(0),
-    [`flags.${MODULE_NAME}.down`]: sourceFor(1),
-    [`flags.${MODULE_NAME}.left`]: sourceFor(2),
-    [`flags.${MODULE_NAME}.right`]: sourceFor(3),
     [`flags.${MODULE_NAME}.mode`]: DIRECTIONAL_IMAGE_MODE,
     [`flags.${MODULE_NAME}.diagonalMode`]: diagonalMode,
     [`flags.${MODULE_NAME}.facing`]: initialFacing,
@@ -82,11 +60,15 @@ export async function initializeMovement(tokenId, { render = true } = {}) {
     lockRotation: true,
     rotation: 1,
   };
+  for (const direction of CARDINAL_DIRECTIONS) {
+    update[`flags.${MODULE_NAME}.${direction.imageFlag}`] =
+      inferred.sources[direction.key];
+  }
   if (diagonalMode) {
-    update[`flags.${MODULE_NAME}.UL`] = sourceFor(8);
-    update[`flags.${MODULE_NAME}.UR`] = sourceFor(9);
-    update[`flags.${MODULE_NAME}.DL`] = sourceFor(10);
-    update[`flags.${MODULE_NAME}.DR`] = sourceFor(11);
+    for (const direction of DIAGONAL_DIRECTIONS) {
+      update[`flags.${MODULE_NAME}.${direction.imageFlag}`] =
+        inferred.sources[direction.key];
+    }
   }
   await token.document.update(update, { render });
   await preloadDirectionalImages(token.document);
@@ -165,38 +147,20 @@ function movementDirection(token, change, eightWay) {
   const nextY = foundry.utils.hasProperty(change, "y") ? change.y : token.y;
   const dx = nextX - token.x;
   const dy = nextY - token.y;
-  if (dx === 0 && dy === 0) return "";
-
-  if (eightWay && dx !== 0 && dy !== 0) {
-    if (dx < 0 && dy < 0) return "up-left";
-    if (dx > 0 && dy < 0) return "up-right";
-    if (dx < 0 && dy > 0) return "down-left";
-    return "down-right";
-  }
-
-  if (dy < 0) return "up";
-  if (dy > 0) return "down";
-  return dx < 0 ? "left" : "right";
+  return directionFromDelta(dx, dy, eightWay);
 }
 
-function rotationDirection(rotation, eightWay) {
-  const normalized = ((Number(rotation) % 360) + 360) % 360;
-  if (eightWay) {
-    const directions = [
-      "down",
-      "down-left",
-      "left",
-      "up-left",
-      "up",
-      "up-right",
-      "right",
-      "down-right",
-    ];
-    return directions[Math.round(normalized / 45) % directions.length];
-  }
-
-  const directions = ["down", "left", "up", "right"];
-  return directions[Math.round(normalized / 90) % directions.length];
+export function resolveMovementFacing(
+  token,
+  change,
+  diagonalMode = false,
+  isometric = false,
+) {
+  const direction = movementDirection(token, change, diagonalMode);
+  return resolveFacingDirection(direction, {
+    eightWay: diagonalMode,
+    isometric,
+  });
 }
 
 function setSpriteSheetFacing(token, change, direction) {
@@ -249,16 +213,18 @@ export async function addListener() {
       foundry.utils.hasProperty(change, "y");
     const rotation = foundry.utils.hasProperty(change, "rotation");
     if (move) {
-      const direction = mapCanvasDirectionToSource(
-        movementDirection(token, change, diagonalMode),
+      const direction = resolveMovementFacing(
+        token,
+        change,
+        diagonalMode,
         isometric,
       );
       if (spriteSheetMode) setSpriteSheetFacing(token, change, direction);
       else setDirectionalTexture(token, change, direction);
     } else if (rotation) {
-      const direction = mapCanvasDirectionToSource(
-        rotationDirection(change.rotation, diagonalMode),
-        isometric,
+      const direction = resolveFacingDirection(
+        directionFromRotation(change.rotation, diagonalMode),
+        { eightWay: diagonalMode, isometric },
       );
       if (spriteSheetMode) setSpriteSheetFacing(token, change, direction);
       else setDirectionalTexture(token, change, direction);
