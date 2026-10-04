@@ -2,6 +2,8 @@ Change Log for Token Movement 8-bit Style.
 
 Unreleased:
 
+1.5.5:
+
     -Fixed GitHub issue #9 by preserving Foundry's Token, icon, and mesh visibility alpha when directional textures change.
 
 1.5.4:

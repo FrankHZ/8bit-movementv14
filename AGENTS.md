@@ -43,13 +43,14 @@ This repository is a Foundry Virtual Tabletop module for v13/v14. Keep changes s
 
 ## Versioning and Local Release
 
-- The current published release is `1.5.4`, and README's install manifest URL
+- The current published release is `1.5.5`, and README's install manifest URL
   points to that immutable tag.
 - During future version work, keep README's install URL on the latest published
   tag until its replacement tag and GitHub release exist.
-- The v1.5.4 manifest uses Foundry `minimum: 13` and `verified: 14.367`.
+- The v1.5.5 manifest uses Foundry `minimum: 13` and `verified: 14.367`.
 - Keep `package.json` and `src/module.json` versions identical.
-- Record this patch cycle under the `1.5.4` CHANGELOG entry.
+- Record unreleased changes under the `Unreleased` CHANGELOG entry, then move them
+  under the new version heading when publishing a release.
 - `src/` is canonical. Run `npm run release:package` to generate the unpacked module, the version-free manual-install zip, and the versioned release zip under `release/`.
 - Once requested local work is complete and relevant checks pass, create a local commit without waiting for a separate commit instruction.
 - Local packaging or linking does not authorize pushing tags, publishing a GitHub release, or calling Foundry's release API.
