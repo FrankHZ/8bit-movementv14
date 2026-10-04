@@ -135,12 +135,6 @@ async function loadDirectionalTexture(src) {
   }
 }
 
-function forceOpaque(token) {
-  token.alpha = 1;
-  if (token.icon) token.icon.alpha = 1;
-  if (token.mesh) token.mesh.alpha = 1;
-}
-
 function getVideoSource(texture) {
   return getVideoHelper()?.getVideoSource?.(texture) ?? null;
 }
@@ -267,7 +261,6 @@ export function applyDirectionalTexture(token, texture) {
   token.texture = texture;
   if (token.mesh.texture !== texture) token.mesh.texture = texture;
   if (changed) token.renderFlags?.set?.({ refreshMesh: true });
-  forceOpaque(token);
   return changed;
 }
 

@@ -1,5 +1,9 @@
 Change Log for Token Movement 8-bit Style.
 
+Unreleased:
+
+    -Fixed GitHub issue #9 by preserving Foundry's Token, icon, and mesh visibility alpha when directional textures change.
+
 1.5.4:
 
     -Added per-direction Foundry video support for WebM, MP4, M4V, and OGV assets, with independent muted looping playback for each Token.
